@@ -1,0 +1,93 @@
+{
+  "expo": {
+    "name": "CholoPay ",
+    "slug": "cholopay ",
+    "scheme": "cholopay ",
+    "owner": "mdmusa12",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/play_store_512.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIBackgroundModes": ["location", "fetch"],
+        "NSLocationAlwaysUsageDescription": "We need your location even in the background.",
+        "NSLocationWhenInUseUsageDescription": "We need your location while using the app.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "To share your live location even in background."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/play_store_512.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.md_musa.client2",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "WAKE_LOCK",
+        "FOREGROUND_SERVICE_LOCATION"
+      ],
+      "foregroundService": {
+        "notificationTitle": "Live Bus Tracking",
+        "notificationBody": "Sharing your location in real-time."
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "cholopay "
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      "@maplibre/maplibre-react-native",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow cholopay  app to use your location.",
+          "isBackgroundLocationEnabled": true
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "DVELOPMENT_SERVER_URL": "http://192.168.1.13:5000",
+      "PRODUCTION_SERVER_URL": "https://choloserver-production.up.railway.app",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "b808a2a4-e198-4985-aa38-2b226967eede"
+      },
+      "androidMetadata": {
+        "com.mapbox.token": "your_dummy_mapbox_token"
+      }
+    }
+  }
+}
