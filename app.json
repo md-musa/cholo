@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "CholoPay ",
-    "slug": "cholopay ",
-    "scheme": "cholopay ",
-    "owner": "mdmusa12",
+    "name": "CholoPay",
+    "slug": "cholopay",
+    "scheme": "cholopay",
+    "owner": "md_musa",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/play_store_512.png",
@@ -12,7 +12,10 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "UIBackgroundModes": ["location", "fetch"],
+        "UIBackgroundModes": [
+          "location",
+          "fetch"
+        ],
         "NSLocationAlwaysUsageDescription": "We need your location even in the background.",
         "NSLocationWhenInUseUsageDescription": "We need your location while using the app.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "To share your live location even in background."
@@ -30,7 +33,10 @@
         "ACCESS_BACKGROUND_LOCATION",
         "FOREGROUND_SERVICE",
         "WAKE_LOCK",
-        "FOREGROUND_SERVICE_LOCATION"
+        "FOREGROUND_SERVICE_LOCATION",
+        "NFC",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ],
       "foregroundService": {
         "notificationTitle": "Live Bus Tracking",
@@ -41,10 +47,13 @@
           "action": "VIEW",
           "data": [
             {
-              "scheme": "cholopay "
+              "scheme": "cholopay"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -71,22 +80,23 @@
           "locationAlwaysAndWhenInUsePermission": "Allow cholopay  app to use your location.",
           "isBackgroundLocationEnabled": true
         }
-      ]
+      ],
+      "react-native-nfc-manager"
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "DVELOPMENT_SERVER_URL": "http://192.168.1.13:5000",
+      "DVELOPMENT_SERVER_URL": "http://192.168.1.8:4000",
       "PRODUCTION_SERVER_URL": "https://choloserver-production.up.railway.app",
       "router": {
         "origin": false
       },
-      "eas": {
-        "projectId": "b808a2a4-e198-4985-aa38-2b226967eede"
-      },
       "androidMetadata": {
         "com.mapbox.token": "your_dummy_mapbox_token"
+      },
+      "eas": {
+        "projectId": "8beb667b-f98d-487d-bbfd-faf3018d3803"
       }
     }
   }

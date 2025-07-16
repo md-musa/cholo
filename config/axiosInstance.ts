@@ -5,15 +5,13 @@ import { router } from "expo-router";
 import { store } from "@/store/storeConfig";
 import { ToastUtil } from "@/utils/toastUtil";
 
-// const SERVER_URL = "http://192.168.1.15:4000/api/v1";
-// // const SERVER_URL = `https://tms-dcro.onrender.com/api/v1`;
-// // const SERVER_URL = "https://choloserver-production.up.railway.app/api/v1";
 
 const SERVER_URL =
   process.env.NODE_ENV === "development"
     ? Constants.expoConfig?.extra?.DVELOPMENT_SERVER_URL
     : Constants.expoConfig?.extra?.PRODUCTION_SERVER_URL;
 
+console.log(SERVER_URL);
 // 🔁 Refresh token helper
 const refreshAccessToken = async () => {
   try {
