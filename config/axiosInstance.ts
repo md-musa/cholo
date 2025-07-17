@@ -5,7 +5,6 @@ import { router } from "expo-router";
 import { store } from "@/store/storeConfig";
 import { ToastUtil } from "@/utils/toastUtil";
 
-
 const SERVER_URL =
   process.env.NODE_ENV === "development"
     ? Constants.expoConfig?.extra?.DVELOPMENT_SERVER_URL
@@ -84,7 +83,7 @@ apiClient.interceptors.response.use(
   (res) => res.data,
   async (error) => {
     const status = error.response?.status;
-    const message = error.response?.data?.errorMessages?.[0]?.message;
+    const message = error.response?.data?.errorMessages[0]?.message;
 
     //console.error(`🟥 ${error.config?.url}\n`, JSON.stringify(error.response?.data, null, 2));
 
@@ -93,7 +92,7 @@ apiClient.interceptors.response.use(
     }
 
     ToastUtil.error(message || "Something went wrong!");
-
+    // console.log(JSON.stringify(error, null, 2));
     return Promise.reject(error);
   }
 );

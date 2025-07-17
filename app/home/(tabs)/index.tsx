@@ -66,21 +66,18 @@ export default function Index() {
           bus: busId,
           schedule: "xxxxx",
           nfcUid: uid,
-          location: {
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-          },
+          coords: [coords.longitude, coords.latitude],
         });
 
         console.log(JSON.stringify(response, null, 2));
         setResult(response);
 
         setStatus("success");
-        await new Promise((res) => setTimeout(res, 1000)); // Pause to show success animation
+        await new Promise((res) => setTimeout(res, 10000)); // Pause to show success animation
       } catch (error) {
-        console.log(JSON.stringify(error, null, 2));
+        console.log(JSON.stringify(error?.response?.data, null, 2));
         setStatus("fail");
-        setError(error?.message);
+        setError(error?.response?.data?.errorMessages[0]?.message);
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         console.warn("❌ Scan Failed", error);
         await new Promise((res) => setTimeout(res, 1500)); // Pause to show error animation
@@ -101,7 +98,7 @@ export default function Index() {
       case "scanning":
         return <LottieView source={nfcScanImage} autoPlay loop style={{ width: 200, height: 250 }} />;
       case "processing":
-        return <LottieView source={paymentProcessingImage} autoPlay loop style={{ width: 200, height: 250 }} />;
+        return <LottieView source={paymentProcessingImage} autoPlay loop style={{ width: 200, height: 200 }} />;
       case "success":
         return <LottieView source={paymentSuccessImage} autoPlay loop={false} style={{ width: 200, height: 250 }} />;
       case "fail":
@@ -155,22 +152,29 @@ export default function Index() {
       </View>
 
       {/* Scan Button */}
-      {!isScanning && routeId && busId && <Button title="Start Scanning" onPress={startNfcScanLoop} />}
+      {!isScanning && routeId && busId && (
+        <View className="flex-1 items-center justify-center">
+          <Button title="Start Scanning" onPress={startNfcScanLoop} />
+        </View>
+      )}
 
       {/* Animation Display */}
-      <View className="flex-1 items-center justify-center border border-red-300">
+      <View className="flex-1 items-center justify-center">
         <View>{renderAnimation()}</View>
 
+        {status == "scanning" && <Text className="text-2xl text-gray-800">Punch your student card</Text>}
+
         {status === "success" && result !== null && (
-          <View style={{ marginTop: 10, alignItems: "center" }}>
-            <Text className="text-4xl font-bold">{result?.message}</Text>
+          <>
+            <Text className="text-3xl font-semibold my-2">{result?.message}</Text>
             <Text className="text-2xl"> Stop: {result?.data.stop}</Text>
             <Text className="text-2xl"> Fare: {result?.data.fare} BDT</Text>
-          </View>
+          </>
         )}
+        {status === "processing" && <Text className="text-2xl text-gray-700"> Transaction is processing...</Text>}
 
-        {status === "fail" && error && <Text className="text-4xl font-bold">{error?.message}</Text>}
-        {status === "idle" && <Text className="text-gray-500 mt-2">Tap start to begin scanning</Text>}
+        {status === "fail" && error && <Text className="text-3xl font-semibold">{error}</Text>}
+        {status === "idle" && <Text className="text-gray-500 mt-2">Select Route and Bus Name</Text>}
       </View>
     </SafeAreaView>
   );
