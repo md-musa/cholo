@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import RoutePage from "./pages/RoutePage";
+import RoutePage from "./pages/FareMatrix";
 import Schedule from "./pages/AddSchedule";
 import Dashboard from "./pages/Dashboard";
 import Sidebar from "./components/Sidebar";
@@ -9,6 +9,7 @@ import BusPage from "./pages/BusPage";
 import AddSchedule from "./pages/AddSchedule";
 import Logs from "./pages/Logs";
 import MapPage from "./pages/Map";
+import FareMatrix from "./pages/FareMatrix";
 
 const DashboardLayout = () => {
   return (
@@ -20,7 +21,7 @@ const DashboardLayout = () => {
         <div className="">
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/route" element={<RoutePage />} />
+            <Route path="/fare-matrix" element={<FareMatrix />} />
             <Route path="/add-schedule" element={<AddSchedule />} />
             <Route path="/bus" element={<BusPage />} />
             <Route path="/map" element={<MapPage />} />

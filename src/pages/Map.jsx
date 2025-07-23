@@ -3,8 +3,8 @@ import { MapContainer, TileLayer, Polyline, Marker, Popup, useMapEvents, Tooltip
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import apiClient from "../config/axiosConfig";
+import { makeUpperCaseAndRemoveUnderscore } from "../utils/textUtil";
 
-// Fix marker icons (required for many setups)
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -26,12 +26,14 @@ const MapPage = () => {
   const [clickedPosition, setClickedPosition] = useState(null);
   const [currentRoute, setCurrentRoute] = useState(null);
   const [nearestStopage, setNearestStopage] = useState(null);
+  const [routes, setRoutes] = useState([]);
 
   useEffect(() => {
     async function fetchRoutes() {
       try {
         const { data } = await apiClient.get("routes");
-        setCurrentRoute(data.data[0]);
+        console.log(data);
+        setRoutes(data);
       } catch (err) {
         console.error("Error fetching route:", err);
       }
@@ -65,33 +67,61 @@ const MapPage = () => {
 
   return (
     <div className="h-screen w-full">
-      <MapContainer center={[23.80497844151923, 90.3623591658772]} zoom={15} style={{ height: "100%", width: "100%" }}>
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <div className="flex justify-center items-center p-2 text-black">
+        <select
+          className="p-2 border rounded"
+          onChange={(e) => {
+            const selectedRoute = routes.find((route) => route._id === e.target.value);
+            setCurrentRoute(selectedRoute);
+            setClickedPosition(null);
+            setNearestStopage(null);
+          }}
+          value={currentRoute?._id || ""}
+        >
+          <option value="" disabled>
+            Select a route
+          </option>
+          {routes?.map((route) => (
+            <option className="text-black" key={route._id} value={route._id}>
+              {route.routeName}
+            </option>
+          ))}
+        </select>
+      </div>
 
-        {currentRoute?.routeLine && <Polyline positions={currentRoute.routeLine.map(convertToLatLng)} color="blue" />}
+      <div className="p-2 rounded-xl overflow-hidden h-full w-full">
+        <MapContainer
+          center={[23.80497844151923, 90.3623591658772]}
+          zoom={15}
+          style={{ height: "100%", width: "100%" }}
+        >
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-        {currentRoute?.stopages?.map((stop, idx) => (
-          <Marker key={idx} position={convertToLatLng(stop.coords)}>
-            <Tooltip permanent direction="top" offset={[0, -5]}>
-              <p>{stop.name}</p>
-              <p>{stop.fare}Tk</p>
-            </Tooltip>
-          </Marker>
-        ))}
+          {currentRoute?.routeLine && <Polyline positions={currentRoute.routeLine.map(convertToLatLng)} color="blue" />}
 
-        {clickedPosition && (
-          <Marker position={clickedPosition}>
-            <Tooltip permanent direction="top" offset={[0, -5]}>
-              <p>🟠 {nearestStopage?.stop}</p>
-              <p>{"  " + nearestStopage?.fare} Tk</p>
-            </Tooltip>
-          </Marker>
-        )}
+          {currentRoute?.stopages?.map((stop, idx) => (
+            <Marker key={idx} position={convertToLatLng(stop.coords)}>
+              <Tooltip permanent direction="top" offset={[0, -5]}>
+                <p>🚩 {makeUpperCaseAndRemoveUnderscore(stop.name)}</p>
+              </Tooltip>
+            </Marker>
+          ))}
 
-        <ClickCapture onClick={setClickedPosition} />
-      </MapContainer>
+          {clickedPosition && (
+            <Marker position={clickedPosition}>
+              <Tooltip permanent direction="top" offset={[0, -5]}>
+                <p>🟠 {nearestStopage?.stop}</p>
+                <p>{"  " + nearestStopage?.fare} Tk</p>
+              </Tooltip>
+            </Marker>
+          )}
+
+          <ClickCapture onClick={setClickedPosition} />
+        </MapContainer>
+      </div>
     </div>
   );
 };
+
 
 export default MapPage;

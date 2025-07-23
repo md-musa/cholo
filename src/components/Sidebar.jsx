@@ -11,12 +11,12 @@ function Sidebar() {
 
   const navItems = [
     { label: "Dashboard", to: "/dashboard", icon: <FaTachometerAlt /> },
-    { label: "Routes", to: "/route", icon: <FaRoute /> },
-    { label: "Schedule", to: "/add-schedule", icon: <FaCalendarPlus /> },
+    { label: "FareMatrix", to: "/fare-matrix", icon: <FaRoute /> },
+    // { label: "Schedule", to: "/add-schedule", icon: <FaCalendarPlus /> },
     // { label: "View Schedules", to: "/view-schedules", icon: <FaCalendarCheck /> },
     { label: "Buses", to: "/bus", icon: <FaBus /> },
     { label: "Map", to: "/map", icon: <FaMarker /> },
-    { label: "Logs", to: "/logs", icon: <FaInfo /> },
+    // { label: "Logs", to: "/logs", icon: <FaInfo /> },
   ];
 
   return (
