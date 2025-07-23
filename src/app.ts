@@ -15,11 +15,10 @@ import ApiError from "./errors/ApiError";
 import { stat } from "fs";
 import { io } from "./server";
 import { ScheduleRouter } from "./app/modules/schedule/schedule.route";
-import UserModel from "./app/modules/auth/auth.model";
 import { broadcastLocation } from "./app/socket/broadcast";
 import { ErrorLogRoute } from "./app/modules/errorLog/errorLog.route";
 import { PaymentRoute } from "./app/modules/payment/payment.route";
-import { FareMatrixRoute } from "./app/modules/stopage/stopage.route";
+import { FareMatrixRoute } from "./app/modules/fareMatrix/fareMatrix.route";
 
 const app: Application = express();
 

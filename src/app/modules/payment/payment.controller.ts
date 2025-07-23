@@ -6,7 +6,7 @@ import ApiError from "../../../errors/ApiError";
 import { RouteModel } from "../route/route.model";
 import { calculateDistance, findNearestStop } from "./payment.util";
 import { TransactionModel } from "./payment.model";
-import { FareMatrix } from "../stopage/stopage.model";
+import { FareMatrix } from "../fareMatrix/fareMatrix.model";
 import UserModel from "../auth/auth.model";
 
 const createPayment = async (req: Request, res: Response): Promise<void> => {

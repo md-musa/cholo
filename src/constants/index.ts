@@ -1,9 +1,16 @@
 export enum USER_ROLES {
-  STUDENT = "student",
-  EMPLOYEE = "employee",
+  CUSTOMER = "customer",
+  POS_DEVICE = "pos_device",
   ADMIN = "admin",
   SUPER_ADMIN = "super_admin",
 }
+
+// export enum USER_ROLES {
+//   STUDENT = "student",
+//   EMPLOYEE = "employee",
+//   ADMIN = "admin",
+//   SUPER_ADMIN = "super_admin",
+// }
 
 export enum BUS_STATUS {
   ACTIVE = "active",

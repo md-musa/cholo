@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { FareMatrix } from "./stopage.model";
+import { FareMatrix } from "./fareMatrix.model";
 import sendResponse from "../../../shared/sendResponse";
 import ApiError from "../../../errors/ApiError";
 

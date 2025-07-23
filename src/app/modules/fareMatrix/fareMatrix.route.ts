@@ -1,6 +1,6 @@
 import express from "express";
 
-import { FareMatrixController } from "./stopage.controller";
+import { FareMatrixController } from "./fareMatrix.controller";
 
 const router = express.Router();
 

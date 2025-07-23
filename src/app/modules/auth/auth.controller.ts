@@ -6,6 +6,7 @@ import { StatusCodes } from "http-status-codes";
 
 const registerUser = async (req: Request, res: Response): Promise<void> => {
   const userInfo: IUser = req.body;
+  console.log(userInfo);
 
   const { accessToken, refreshToken, user } = await AuthService.registerUser(userInfo);
   res.cookie("refreshToken", refreshToken);
@@ -32,22 +33,22 @@ const login = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
-const refreshToken = async (req: Request, res: Response): Promise<void> => {
-  console.log("refreshToken--------------\n [refresh()]", req.cookies);
-  const { refreshToken } = req.cookies;
-  const { accessToken, newRefreshToken } = await AuthService.refreshToken(refreshToken);
-  res.cookie("refreshToken", newRefreshToken);
+// const refreshToken = async (req: Request, res: Response): Promise<void> => {
+//   console.log("refreshToken--------------\n [refresh()]", req.cookies);
+//   const { refreshToken } = req.cookies;
+//   const { accessToken, newRefreshToken } = await AuthService.refreshToken(refreshToken);
+//   res.cookie("refreshToken", newRefreshToken);
 
-  console.log("accessToken", accessToken);
-  console.log("newRefreshToken", newRefreshToken);
+//   console.log("accessToken", accessToken);
+//   console.log("newRefreshToken", newRefreshToken);
 
-  sendResponse(res, {
-    statusCode: StatusCodes.OK,
-    success: true,
-    message: "New access token generated successfully",
-    data: { accessToken },
-  });
-};
+//   sendResponse(res, {
+//     statusCode: StatusCodes.OK,
+//     success: true,
+//     message: "New access token generated successfully",
+//     data: { accessToken },
+//   });
+// };
 
 const getSingleUserData = async (req: Request, res: Response): Promise<void> => {
   console.log(req.params);
@@ -66,6 +67,5 @@ const getSingleUserData = async (req: Request, res: Response): Promise<void> => 
 export const AuthController = {
   registerUser,
   login,
-  refreshToken,
   getSingleUserData,
 };
