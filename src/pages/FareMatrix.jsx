@@ -58,42 +58,76 @@ function FareMatrix() {
           ))}
         </select>
       </div>
-
-      <div className="overflow-auto">
-        {stops.length > 0 && (
-          <table className="min-w-max w-full table-auto border border-gray-300 rounded-lg shadow-md">
-            <thead>
-              <tr className="bg-gray-200 text-gray-700">
-                <th className="py-3 px-4 text-left font-semibold"></th>
-                {stops.map((stop) => (
-                  <th key={stop} className="py-3 px-4 text-center font-semibold">
-                    {makeUpperCaseAndRemoveUnderscore(stop)}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {stops.map((fromStop, rowIndex) => (
-                <tr key={fromStop} className={rowIndex % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                  <td className="py-3 px-4 font-medium text-gray-800 sticky left-0 bg-white z-10">
-                    {makeUpperCaseAndRemoveUnderscore(fromStop)}
-                  </td>
-                  {stops.map((toStop, colIndex) => (
-                    <td
-                      key={toStop}
-                      className={`py-3 px-4 text-center ${
-                        fromStop === toStop ? "bg-green-100 text-green-700 font-bold" : "text-gray-700"
-                      }`}
-                    >
-                      {fareMatrix[fromStop]?.[toStop] ?? "-"}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+<div className="overflow-auto max-h-[80vh] rounded-lg border border-gray-200 shadow-sm">
+  {stops.length > 0 && (
+    <table className="min-w-full divide-y divide-gray-200">
+      <thead className="bg-gray-100">
+        <tr>
+          <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 sticky left-0 bg-gray-100 z-20 border-r border-gray-200">
+            From \ To
+          </th>
+          {stops.map((stop, index) => (
+            <th
+              key={stop}
+              className={`py-4 px-6 text-center text-sm font-semibold text-gray-700 uppercase tracking-wider ${
+                index % 2 === 0 ? 'bg-blue-50' : 'bg-purple-50'
+              }`}
+            >
+              <span className="inline-block whitespace-nowrap">
+                {makeUpperCaseAndRemoveUnderscore(stop)}
+              </span>
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody className="bg-white divide-y divide-gray-200">
+        {stops.map((fromStop, rowIndex) => (
+          <tr 
+            key={fromStop} 
+            className={`transition-colors ${
+              rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+            }`}
+          >
+            <td 
+              className={`py-4 px-6 uppercase text-sm font-medium text-gray-900 sticky left-0 z-10 whitespace-nowrap border-r border-gray-200 ${
+                rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+              }`}
+            >
+              {makeUpperCaseAndRemoveUnderscore(fromStop)}
+            </td>
+            {stops.map((toStop, colIndex) => (
+              <td
+                key={toStop}
+                className={`
+                  py-4 px-6 text-center text-sm border border-gray-100
+                  ${
+                    fromStop === toStop
+                      ? "bg-emerald-100 text-emerald-800 font-bold"
+                      : rowIndex === colIndex
+                      ? "bg-blue-100"
+                      : rowIndex % 2 === 0 
+                        ? "bg-white" 
+                        : "bg-gray-50"
+                  }
+                  ${rowIndex < colIndex ? "font-medium text-gray-700" : "text-gray-600"}
+                  hover:bg-gray-200 transition-colors
+                `}
+              >
+                {fromStop === toStop ? (
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold bg-emerald-200 text-emerald-800 mx-auto">
+                    0
+                  </span>
+                ) : (
+                  fareMatrix[fromStop]?.[toStop] ?? "-"
+                )}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+</div>
     </div>
   );
 }

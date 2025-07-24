@@ -1,7 +1,19 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaRoute, FaCalendarPlus, FaCalendarCheck, FaBus, FaTachometerAlt, FaInfo, FaMarker } from "react-icons/fa";
+import {
+  FaRoute,
+  FaCalendarPlus,
+  FaCalendarCheck,
+  FaBus,
+  FaTachometerAlt,
+  FaInfo,
+  FaMarker,
+  FaMoneyBill,
+  FaUsers,
+} from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext";
+import { FaLocationPin, FaMapLocation } from "react-icons/fa6";
+import { LuWaypoints } from "react-icons/lu";
 
 function Sidebar() {
   const location = useLocation();
@@ -11,11 +23,12 @@ function Sidebar() {
 
   const navItems = [
     { label: "Dashboard", to: "/dashboard", icon: <FaTachometerAlt /> },
-    { label: "FareMatrix", to: "/fare-matrix", icon: <FaRoute /> },
+    { label: "FareMatrix", to: "/fare-matrix", icon: <FaMoneyBill /> },
+    { label: "Customers", to: "/customers", icon: <FaUsers /> },
     // { label: "Schedule", to: "/add-schedule", icon: <FaCalendarPlus /> },
     // { label: "View Schedules", to: "/view-schedules", icon: <FaCalendarCheck /> },
-    { label: "Buses", to: "/bus", icon: <FaBus /> },
-    { label: "Map", to: "/map", icon: <FaMarker /> },
+    // { label: "Buses", to: "/bus", icon: <FaBus /> },
+    { label: "Map", to: "/map", icon: <LuWaypoints /> },
     // { label: "Logs", to: "/logs", icon: <FaInfo /> },
   ];
 
@@ -33,8 +46,8 @@ function Sidebar() {
       <div className="drawer-side">
         <label htmlFor="my-drawer-2" aria-label="close sidebar" className="drawer-overlay"></label>
 
-        <ul className="menu p-5 w-72 min-h-full bg-slate-700 text-white space-y-2">
-          <h2 className="text-xl font-semibold mb-4 text-muted-100">Admin Menu</h2>
+        <ul className="menu p-5 w-72 min-h-full bg-gray-700 text-white space-y-2">
+          <h2 className="text-xl font-semibold mb-4 text-muted-100 text-center my-3">Admin Dashboard</h2>
 
           {navItems.map((item) => (
             <li key={item.to}>

@@ -6,11 +6,11 @@ function Navbar() {
   const { userData, logout } = useAuth();
 
   return (
-    <div className="drawer ">
+    <div className="drawer">
       <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-col bg-muted-100">
         {/* Navbar */}
-        <div className="navbar bg-slate-700 text-black shadow-md px-4">
+        <div className="navbar bg-gray-700 text-black shadow-md mx-2 rounded-2xl my-2 px-4">
           <div className="flex-none lg:hidden">
             <label htmlFor="my-drawer-3" className="btn btn-ghost btn-circle text-black">
               <svg
@@ -24,7 +24,7 @@ function Navbar() {
               </svg>
             </label>
           </div>
-          <div className="flex-1 text-white text-xl font-semibold">Cholo</div>
+          <div className="flex-1 text-white text-xl font-semibold">Cholo Admin</div>
 
           <div className="flex-none">
             <div className="dropdown dropdown-end">
@@ -53,7 +53,7 @@ function Navbar() {
           {userData && (
             <div className="flex flex-col mr-4 ml-2 space-y-1">
               <p className="text-sm font-semibold text-white">{userData.name}</p>
-              <p className="text-xs capitalize bg-blue-100 text-blue-700 px-2 rounded-md">{userData.role}</p>
+              <p className="text-xs capitalize text-white rounded-md">{userData.role}</p>
             </div>
           )}
         </div>
