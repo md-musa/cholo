@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { MaterialIcons, FontAwesome5, Ionicons, Feather } from "@expo/vector-icons";
-import {colors} from "@/config/colors";
+import { colors } from "@/config/colors";
 
 export default function TabLayout() {
   return (
@@ -28,32 +28,12 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => <MaterialIcons name="home" size={22} color={color} />,
         }}
       />
+
       <Tabs.Screen
-        name="schedules"
+        name="history"
         options={{
-          title: "Schedules",
-          tabBarIcon: ({ color, size }) => <MaterialIcons name="schedule" size={22} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="broadcast"
-        options={{
-          title: "Broadcast",
-          tabBarIcon: ({ color, size }) => <FontAwesome5 name="broadcast-tower" size={21} color={color} />,
-        }}
-      />
-      {/* <Tabs.Screen
-        name="notification"
-        options={{
-          title: "Notifications",
-          tabBarIcon: ({ color, size }) => <Ionicons name="notifications-outline" size={21} color={color} />,
-        }}
-      /> */}
-      <Tabs.Screen
-        name="setting"
-        options={{
-          title: "Settings",
-          tabBarIcon: ({ color, size }) => <Feather name="settings" size={21} color={color} />,
+          title: "History",
+          tabBarIcon: ({ color, size }) => <MaterialIcons name="history" size={21} color={color} />,
         }}
       />
     </Tabs>

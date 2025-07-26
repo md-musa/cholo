@@ -2,16 +2,15 @@ import Constants from "expo-constants";
 import axios from "axios";
 import { removeAccessToken, getAccessToken, setAccessToken, AuthUtil } from "@/utils/authUtil";
 import { router } from "expo-router";
-import { store } from "@/store/storeConfig";
 import { ToastUtil } from "@/utils/toastUtil";
+const { hostUri } = Constants.expoConfig || {};
+const LAN_IP = hostUri?.split(":")[0];
 
 const SERVER_URL =
-  process.env.NODE_ENV === "development"
-    ? Constants.expoConfig?.extra?.DVELOPMENT_SERVER_URL
-    : Constants.expoConfig?.extra?.PRODUCTION_SERVER_URL;
+  process.env.NODE_ENV === "development" ? `http://${LAN_IP}:4000` : Constants.expoConfig?.extra?.PRODUCTION_SERVER_URL;
 
 console.log(SERVER_URL);
-// 🔁 Refresh token helper
+
 const refreshAccessToken = async () => {
   try {
     const response = await axios.post(`${SERVER_URL}/auth/refresh-token`, {}, { withCredentials: true });
