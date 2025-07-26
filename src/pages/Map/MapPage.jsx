@@ -33,9 +33,9 @@ const checkOutIcon = new L.Icon({
 });
 
 const busMarker = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/3448/3448339.png",
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
-  iconSize: [25, 41],
+  iconSize: [38, 41],
   iconAnchor: [12, 41],
 });
 
@@ -52,17 +52,20 @@ const ClickCapture = ({ onClick }) => {
 const MapPage = () => {
   const [clickedPosition, setClickedPosition] = useState(null);
   const [currentRoute, setCurrentRoute] = useState(null);
-  const [nearestStopage, setNearestStopage] = useState(null);
   const [routes, setRoutes] = useState([]);
-  const [tripStatus, setTripStatus] = useState("idle");
-  const [tripData, setTripData] = useState({
-    checkIn: null,
-    checkOut: null,
-    fare: null,
-  });
   const [simulatedBusPositions, setSimulatedBusPositions] = useState([]);
   const [currentBusPositionIndex, setCurrentBusPositionIndex] = useState(0);
   const [traveledPath, setTraveledPath] = useState([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Consolidated trip state
+  const [tripState, setTripState] = useState({
+    status: "idle", // "idle", "checked-in", "checked-out"
+    checkIn: null,
+    checkOut: null,
+    fare: null,
+    nearestStopage: null,
+  });
 
   const findNearestPointIndex = useCallback((point, routeLine) => {
     if (!routeLine || routeLine.length === 0) return 0;
@@ -77,7 +80,6 @@ const MapPage = () => {
         nearestIndex = index;
       }
     });
-    console.log("Nearest point index:", nearestIndex, "Distance:", minDistance);
     return nearestIndex;
   }, []);
 
@@ -93,7 +95,7 @@ const MapPage = () => {
     fetchRoutes();
   }, []);
 
-  // Initialize route and find nearest point when route or clicked position changes
+  // Initialize route and find nearest point
   useEffect(() => {
     if (currentRoute?.routeLine && clickedPosition) {
       const lines = currentRoute.routeLine.map((coord) => [coord[1], coord[0]]);
@@ -105,51 +107,58 @@ const MapPage = () => {
     }
   }, [currentRoute, clickedPosition, findNearestPointIndex]);
 
-  console.log(traveledPath);
-
-  // Simulate bus movement
+  // Simulate bus movement only during active trip
   useEffect(() => {
-    if (simulatedBusPositions.length > 0 && tripStatus === "checked-in") {
-      const interval = setInterval(() => {
+    let interval;
+    if (simulatedBusPositions.length > 0 && tripState.status === "checked-in") {
+      interval = setInterval(() => {
         setCurrentBusPositionIndex((prev) => {
           if (prev < simulatedBusPositions.length - 1) {
             setTraveledPath((prevPath) => [...prevPath, simulatedBusPositions[prev + 1]]);
             return prev + 1;
           }
+          clearInterval(interval);
           return prev;
         });
       }, 300);
-
-      return () => clearInterval(interval);
     }
-  }, [simulatedBusPositions, tripStatus]);
+    return () => clearInterval(interval);
+  }, [simulatedBusPositions, tripState.status]);
 
   const handleCheckIn = async () => {
+    if (isProcessing || !clickedPosition) return;
+    setIsProcessing(true);
+
     try {
       const response = await apiClient.post("/payments/create-payment", {
         userId: "681de61741a6d062595bc542",
         routeId: currentRoute._id,
         busId: "685c430465f521c175a4ca79",
         scheduleId: "xxxxxx",
-        nfcUid: "04A3B9C1D2E3F4",
+        nfcUid: "43d5072217680",
         coords: [clickedPosition[1], clickedPosition[0]],
       });
 
-      setTripData((prev) => ({
-        ...prev,
+      setTripState({
+        status: "checked-in",
         checkIn: clickedPosition,
+        checkOut: null,
         fare: response.data.fare,
-      }));
-      setTripStatus("checked-in");
-      setNearestStopage(response.data);
+        nearestStopage: response.data,
+      });
     } catch (err) {
       console.error("Check-in error:", err);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
+  console.error("Trip State:", tripState.nearestStopage);
   const handleCheckOut = async () => {
+    if (isProcessing || tripState.status !== "checked-in") return;
+    setIsProcessing(true);
+
     try {
-      // Get the current bus position immediately
       const currentBusPos = simulatedBusPositions[currentBusPositionIndex];
       const currentCoords = [currentBusPos[1], currentBusPos[0]];
 
@@ -158,33 +167,33 @@ const MapPage = () => {
         routeId: currentRoute._id,
         busId: "685c430465f521c175a4ca79",
         scheduleId: "xxxxxx",
-        nfcUid: "04A3B9C1D2E3F4",
+        nfcUid: "43d5072217680",
         coords: currentCoords,
       });
 
-      // Update all states at once
-      setTripData({
-        checkIn: tripData.checkIn,
+      setTripState((prev) => ({
+        ...prev,
+        status: "checked-out",
         checkOut: currentBusPos,
         fare: response.data.fare,
-      });
-      setClickedPosition(currentBusPos);
-      setTripStatus("checked-out");
-      setNearestStopage(response.data);
+        nearestStopage: response.data,
+      }));
     } catch (err) {
       console.error("Check-out error:", err);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const resetTrip = () => {
-    setTripStatus("idle");
-    setTripData({
+    setTripState({
+      status: "idle",
       checkIn: null,
       checkOut: null,
       fare: null,
+      nearestStopage: null,
     });
     setClickedPosition(null);
-    setNearestStopage(null);
     setTraveledPath([]);
   };
 
@@ -193,9 +202,9 @@ const MapPage = () => {
   return (
     <div className="h-screen w-full flex flex-col">
       {/* Control Panel */}
-      <div className="bg-white p-4 shadow-md flex flex-col md:flex-row gap-4 items-center">
+      <div className="bg-white py-2 shadow-md flex flex-col md:flex-row gap-4 items-center">
         <select
-          className="p-2 border rounded flex-1 max-w-md"
+          className="p-2 border rounded flex-1 max-w-md cursor-pointer"
           onChange={(e) => {
             const selectedRoute = routes.find((route) => route._id === e.target.value);
             setCurrentRoute(selectedRoute);
@@ -216,51 +225,56 @@ const MapPage = () => {
         <div className="flex gap-2">
           <button
             onClick={handleCheckIn}
-            disabled={!clickedPosition || tripStatus !== "idle"}
-            className={`px-4 py-2 rounded ${
-              !clickedPosition || tripStatus !== "idle" ? "bg-gray-300" : "bg-green-500 text-white"
+            disabled={!clickedPosition || tripState.status !== "idle" || isProcessing}
+            className={`px-4 py-2 rounded cursor-pointer ${
+              !clickedPosition || tripState.status !== "idle" || isProcessing
+                ? "bg-gray-300"
+                : "bg-green-500 text-white"
             }`}
           >
-            Simulate Check-In
+            {isProcessing && tripState.status === "idle" ? "Processing..." : "Simulate Check-In"}
           </button>
           <button
             onClick={handleCheckOut}
-            disabled={!clickedPosition || tripStatus !== "checked-in"}
-            className={`px-4 py-2 rounded ${
-              !clickedPosition || tripStatus !== "checked-in" ? "bg-gray-300" : "bg-red-500 text-white"
+            disabled={tripState.status !== "checked-in" || isProcessing}
+            className={`px-4 py-2 rounded cursor-pointer ${
+              tripState.status !== "checked-in" || isProcessing ? "bg-gray-300" : "bg-red-500 text-white"
             }`}
           >
-            Simulate Check-Out
+            {isProcessing && tripState.status === "checked-in" ? "Processing..." : "Simulate Check-Out"}
           </button>
-          <button onClick={resetTrip} className="px-4 py-2 rounded bg-blue-500 text-white">
+          <button
+            onClick={resetTrip}
+            className="px-4 py-2 rounded bg-blue-500 text-white cursor-pointer"
+            disabled={tripState.status === "idle"}
+          >
             Reset
           </button>
         </div>
 
-        {/* {tripData.fare && ( */}
-        <div className="ml-auto bg-yellow-100 px-4 py-2 rounded">
-          <span className="font-bold">Fare:</span> ৳{tripData.fare}
+        {/* {tripState.fare !== null && ( */}
+        <div className="ml-auto bg-yellow-100 px-4 py-1 rounded">
+          {/* Start stopage and endstpage from tripState */}
+          <span className="font-bold"></span> {tripState?.nearestStopage?.startStopage} -{" "}
+          {tripState?.nearestStopage?.endStopage} <br />
+          <span className="font-bold">Fare:</span> ৳{tripState.fare}
         </div>
         {/* )} */}
       </div>
 
       {/* Map Container */}
       <div className="flex-1 relative">
-        <MapContainer
-          center={[23.80497844151923, 90.3623591658772]}
-          zoom={13}
-          style={{ height: "100%", width: "100%" }}
-        >
+        <MapContainer center={[23.80497844151923, 90.3623591658772]} zoom={13} style={{ height: "90%", width: "100%" }}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          {/* Traveled Path */}
 
           {/* Full Route Line */}
-
           {currentRoute?.routeLine && (
             <Polyline positions={currentRoute.routeLine.map(convertToLatLng)} color="blue" weight={3} opacity={0.8} />
           )}
+
           {/* Traveled Path */}
           {traveledPath.length > 0 && <Polyline positions={traveledPath} color="red" weight={5} opacity={0.8} />}
+
           {/* Bus Stops */}
           {currentRoute?.stopages?.map((stop, idx) => (
             <Marker key={idx} position={convertToLatLng(stop.coords)}>
@@ -271,27 +285,26 @@ const MapPage = () => {
           ))}
 
           {/* Simulated Bus */}
-          {tripStatus === "checked-in" && simulatedBusPositions.length > 0 && (
-            <Marker position={simulatedBusPositions[currentBusPositionIndex]} icon={busMarker}>
-              <Tooltip permanent>🚌 Bus</Tooltip>
-            </Marker>
+          {tripState.status === "checked-in" && simulatedBusPositions.length > 0 && (
+            <Marker position={simulatedBusPositions[currentBusPositionIndex]} icon={busMarker}></Marker>
           )}
 
           {/* Check-In Marker */}
-          {tripData.checkIn && (
-            <Marker position={tripData.checkIn} icon={checkInIcon}>
+          {tripState.checkIn && (
+            <Marker position={tripState.checkIn} icon={checkInIcon}>
               <Popup>Check-In Point</Popup>
             </Marker>
           )}
-          {/* Check-In Marker */}
-          {tripData.checkOut && (
-            <Marker position={tripData.checkOut} icon={checkOutIcon}>
-              <Popup>Check-out Point</Popup>
+
+          {/* Check-Out Marker */}
+          {tripState.checkOut && (
+            <Marker position={tripState.checkOut} icon={checkOutIcon}>
+              <Popup>Check-Out Point</Popup>
             </Marker>
           )}
 
           {/* Clicked Position */}
-          {clickedPosition && !tripData.checkIn && !tripData.checkOut && (
+          {clickedPosition && tripState.status === "idle" && (
             <Marker position={clickedPosition}>
               <Tooltip permanent direction="top" offset={[0, -5]}>
                 <p>🟢 Clicked Position</p>
@@ -301,13 +314,6 @@ const MapPage = () => {
 
           <ClickCapture onClick={setClickedPosition} />
         </MapContainer>
-      </div>
-
-      {/* Status Bar */}
-      <div className="bg-gray-800 text-white p-2 text-center">
-        {tripStatus === "idle" && "Click on the map to select a position, then click Check-In"}
-        {tripStatus === "checked-in" && "Bus is moving... Click on your destination to Check-Out"}
-        {tripStatus === "checked-out" && `Trip completed! Fare: ৳${tripData.fare}`}
       </div>
     </div>
   );
