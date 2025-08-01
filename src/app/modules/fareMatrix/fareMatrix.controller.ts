@@ -20,9 +20,9 @@ export const createFareMatrix = async (req: Request, res: Response) => {
 };
 
 export const getFareMatrix = async (req: Request, res: Response) => {
-  const matrix = await FareMatrix.find({ routeId: req.params.routeId }).lean();
+  const { routeId } = req.query;
+  const matrix = await FareMatrix.findOne({ routeId }).lean();
   if (!matrix) throw ApiError.notFound("Fare matrix not found for this route");
-
   sendResponse(res, {
     success: true,
     statusCode: 200,
@@ -33,5 +33,5 @@ export const getFareMatrix = async (req: Request, res: Response) => {
 
 export const FareMatrixController = {
   createFareMatrix,
-    getFareMatrix,
-}
+  getFareMatrix,
+};

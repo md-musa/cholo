@@ -3,6 +3,7 @@ import { IUser } from "./auth.interface";
 import { AuthService } from "./auth.service";
 import sendResponse from "../../../shared/sendResponse";
 import { StatusCodes } from "http-status-codes";
+import { UserModel } from "./auth.model";
 
 const registerUser = async (req: Request, res: Response): Promise<void> => {
   const userInfo: IUser = req.body;
@@ -64,8 +65,22 @@ const getSingleUserData = async (req: Request, res: Response): Promise<void> => 
   });
 };
 
+const getUsers = async (req: Request, res: Response): Promise<void> => {
+  const role = req.query.role as string;
+
+  const users = await UserModel.find({ role });
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "User fatched in successfully",
+    data: users,
+  });
+};
+
 export const AuthController = {
   registerUser,
   login,
   getSingleUserData,
+  getUsers,
 };
