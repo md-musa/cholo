@@ -28,12 +28,39 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => <MaterialIcons name="home" size={22} color={color} />,
         }}
       />
-
       <Tabs.Screen
         name="history"
         options={{
           title: "History",
-          tabBarIcon: ({ color, size }) => <MaterialIcons name="history" size={21} color={color} />,
+          tabBarIcon: ({ color, size }) => <MaterialIcons name="history" size={22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="schedules"
+        options={{
+          title: "Schedules",
+          tabBarIcon: ({ color, size }) => <MaterialIcons name="schedule" size={22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="broadcast"
+        options={{
+          title: "Broadcast",
+          tabBarIcon: ({ color, size }) => <FontAwesome5 name="broadcast-tower" size={21} color={color} />,
+        }}
+      />
+      {/* <Tabs.Screen
+        name="notification"
+        options={{
+          title: "Notifications",
+          tabBarIcon: ({ color, size }) => <Ionicons name="notifications-outline" size={21} color={color} />,
+        }}
+      /> */}
+      <Tabs.Screen
+        name="setting"
+        options={{
+          title: "Settings",
+          tabBarIcon: ({ color, size }) => <Feather name="settings" size={21} color={color} />,
         }}
       />
     </Tabs>

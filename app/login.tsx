@@ -35,15 +35,7 @@ const Login = () => {
       ToastUtil.success(`Welcome, ${user.name}!`);
       router.replace("/home");
     } catch (err) {
-      console.log("🟥 Login Error", JSON.stringify(err, null, 2));
-      // print the request url
-      if (err?.config?.url) {
-        const url = err.config.baseURL
-          ? `${err.config.baseURL.replace(/\/$/, "")}:${err.config.url.replace(/^\//, "")}`
-          : err.config.url;
-        console.log("🟦 Request URL:", url);
-      }
-
+      // console.log("🟥 Login Error", JSON.stringify(err, null, 2));
       ToastUtil.error(err?.response?.data.errorMessages[0].message || "Login error");
     }
   };

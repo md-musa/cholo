@@ -38,7 +38,7 @@ export default function RootLayout() {
     <Provider store={store}>
       <GestureHandlerRootView className="flex-1">
         <View className="flex-1 bg-white">
-          {/* <BroadcastManager /> */}
+          <BroadcastManager />
 
           <Stack
             screenOptions={{
@@ -48,7 +48,7 @@ export default function RootLayout() {
           />
           <Toasts />
 
-          {/* <BusLocationManager /> */}
+          <BusLocationManager />
         </View>
       </GestureHandlerRootView>
     </Provider>

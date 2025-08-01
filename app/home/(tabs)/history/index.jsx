@@ -63,7 +63,7 @@ export default function PaymentHistory() {
           return (
             <View key={item._id} style={styles.card} className="border border-gray-200 shadow-md">
               <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle} className="text-lg font-semibold">
+                <Text style={styles.cardTitle} className="text-md font-semibold">
                   {item.startStopage.toUpperCase()}
                   {isCompleted ? ` to ${item.endStopage.toUpperCase()}` : " (Pending)"}
                 </Text>
