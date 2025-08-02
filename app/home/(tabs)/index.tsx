@@ -1,5 +1,6 @@
+// --- At the top of your Index.tsx file ---
 import React, { useCallback, useEffect, useState } from "react";
-import { View, Text, Button, ActivityIndicator } from "react-native";
+import { View, Text, Button, ActivityIndicator, StyleSheet } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import * as Location from "expo-location";
 import NfcManager, { NfcTech } from "react-native-nfc-manager";
@@ -14,132 +15,62 @@ import nfcScanImage from "@/assets/animatedImages/nfc_reader.json";
 import paymentSuccessImage from "@/assets/animatedImages/successfully-done.json";
 import paymentFailureImage from "@/assets/animatedImages/payment-failed.json";
 import apiClient from "@/config/axiosInstance";
+import SuccessCard from "@/components/homeComponents/SuccessCard";
 
-export default function Index() {
-  const [routeId, setRouteId] = useState<string | null>(null);
-  const [busId, setBusId] = useState<string | null>(null);
-  const [isScanning, setIsScanning] = useState(false);
-  const [status, setStatus] = useState<"idle" | "scanning" | "processing" | "success" | "fail">("idle");
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
+const RoutePicker = ({ routeId, setRouteId, setBusId, isScanning, routes }) => (
+  <View className="flex flex-row items-center bg-white border border-muted-300 rounded-2xl px-3 mb-3">
+    <View className="bg-[#F0F0F0] p-1.5 rounded-full mr-2">
+      <MaterialCommunityIcons name="routes" size={22} color="#24204DE6" />
+    </View>
+    <Picker
+      selectedValue={routeId}
+      onValueChange={(val) => {
+        setRouteId(val);
+        setBusId(null);
+      }}
+      style={{ flex: 1 }}
+      enabled={!isScanning}
+      mode="dropdown"
+    >
+      <Picker.Item label="Select a Route" value={null} />
+      {routes?.map((route) => (
+        <Picker.Item
+          key={route._id}
+          label={route.routeName.charAt(0).toUpperCase() + route.routeName.slice(1)}
+          value={route._id}
+        />
+      ))}
+    </Picker>
+  </View>
+);
 
-  const { data: routes } = useGetRoutesQuery();
-  const { data: buses } = useGetBusesQuery();
+const BusPicker = ({ busId, setBusId, isScanning, buses }) => (
+  <View className="flex flex-row items-center bg-white border border-muted-300 rounded-2xl px-3">
+    <View className="bg-[#F0F0F0] p-1.5 rounded-full mr-2">
+      <MaterialCommunityIcons name="bus" size={22} color="#24204DE6" />
+    </View>
+    <Picker selectedValue={busId} onValueChange={setBusId} style={{ flex: 1 }} enabled={!isScanning} mode="dropdown">
+      <Picker.Item label="Select a Bus" value={null} />
+      {buses?.map((bus) => (
+        <Picker.Item key={bus._id} label={bus.name.charAt(0).toUpperCase() + bus.name.slice(1)} value={bus._id} />
+      ))}
+    </Picker>
+  </View>
+);
 
-  useEffect(() => {
-    const initializeNfc = async () => {
-      try {
-        const gt = await checkEssentialPermissions();
-        if (!gt) {
-          console.warn("Essential permissions not granted");
-          return;
-        }
-      } catch (error) {
-        console.error("permission denied", error);
-      }
-    };
+const ScanButton = ({ onPress, isDisabled }) => (
+  <View>
+    <Button title="Start Scanning" onPress={onPress} disabled={isDisabled} />
+  </View>
+);
 
-    initializeNfc();
-  }, []);
-
-  // const startNfcScanLoop = useCallback(async () => {
-  //   setIsScanning(true);
-  //   setStatus("scanning");
-
-  //   while (true) {
-  //     try {
-  //       console.log("🔄 Waiting for NFC...");
-  //       await NfcManager.requestTechnology(NfcTech.Ndef, {
-  //         alertMessage: "Tap your NFC card",
-  //       });
-
-  //       const tag = await NfcManager.getTag();
-  //       const uid = tag?.id ?? "UNKNOWN";
-
-  //       setStatus("processing");
-  //       console.log("✅ Scan Success:", uid);
-
-  //       const { coords } = await Location.getCurrentPositionAsync({
-  //         accuracy: Location.Accuracy.High,
-  //       });
-
-  //       const response = await apiClient.post("/payments/create-payment", {
-  //         userId: "xxxx",
-  //         routeId: routeId,
-  //         busId: busId,
-  //         scheduleId: "xxxxx",
-  //         nfcUid: uid,
-  //         coords: [coords.longitude, coords.latitude],
-  //       });
-
-  //       console.log(JSON.stringify(response, null, 2));
-  //       setResult(response);
-  //       await playBeep();
-  //       setStatus("success");
-  //       console.log("✅ Payment Success:", response);
-  //       await new Promise((res) => setTimeout(res, 8000));
-  //     } catch (error) {
-  //       console.log("Fail", error);
-  //       setStatus("fail");
-  //       setError(error?.response?.data?.errorMessages[0]?.message);
-  //       console.warn("❌ Scan Failed", error);
-  //       await new Promise((res) => setTimeout(res, 1500)); // Pause to show error animation
-  //     } finally {
-  //       await NfcManager.cancelTechnologyRequest();
-  //       setStatus("scanning");
-  //       await new Promise((res) => setTimeout(res, 800)); // Delay before re-scanning
-  //     }
-  //   }
-  // }, [routeId, busId]);
-
-  const startNfcScanLoop = async () => {
-    setIsScanning(true);
-    setStatus("scanning");
-
-    try {
-      setStatus("processing");
-
-      const { coords } = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
-
-      const response = await apiClient.post("/payments/create-payment", {
-        userId: "xxxx",
-        routeId: routeId,
-        busId: busId,
-        scheduleId: "xxxxx",
-        nfcUid: "04357972217680",
-        coords: [coords.longitude, coords.latitude],
-      });
-      playSound("success");
-      setResult(response);
-      setStatus("success");
-      await new Promise((res) => setTimeout(res, 5000));
-    } catch (error) {
-      playSound("error");
-      console.log("Fail", error);
-      setStatus("fail");
-      setError(error?.response?.data?.errorMessages[0]?.message);
-      await new Promise((res) => setTimeout(res, 1500));
-    } finally {
-      setStatus("scanning");
-      await new Promise((res) => setTimeout(res, 800));
-    }
-  };
-
-  useEffect(() => {
-    NfcManager.start();
-  }, []);
-
+const ScanStatusDisplay = ({ status, error, result, routeId, busId }) => {
   const renderAnimation = () => {
     switch (status) {
       case "scanning":
-        return <LottieView source={nfcScanImage} autoPlay speed={0.7} loop style={{ width: 280, height: 280 }} />;
-      case "scanning":
-        return <></>;
+        return <LottieView source={nfcScanImage} autoPlay speed={0.7} loop style={{ width: 300, height: 300 }} />;
       case "processing":
-        // return <LottieView source={paymentProcessingImage} autoPlay loop style={{ width: 200, height: 200 }} />;
-        return <></>;
+        return <ActivityIndicator size="large" color="#006550" />;
       case "success":
         return <LottieView source={paymentSuccessImage} autoPlay loop={false} style={{ width: 200, height: 250 }} />;
       case "fail":
@@ -150,129 +81,146 @@ export default function Index() {
   };
 
   return (
+    <View className="flex-1 items-center mb-2 justify-center bg-white p-6 border border-primary-200 shadow-md rounded-xl">
+      {renderAnimation()}
+
+      {status === "scanning" && (
+        <>
+          <Text className="text-2xl font-medium mb-4 text-center">Please Scan Your Card</Text>
+          <Text className="text-md text-gray-800 mb-4 text-center">Hold your card to the back of the phone.</Text>
+        </>
+      )}
+
+      {status === "processing" && <Text className="text-2xl font-medium text-[#006550] my-4">Processing...</Text>}
+
+      {status === "success" && <SuccessCard result={result} status={status} />}
+
+      {status === "fail" && (
+        <View className="w-full max-w-md bg-red-50 rounded-xl p-6 border border-red-200">
+          <Text className="text-2xl font-bold text-red-600 text-center mb-2">Transaction Failed</Text>
+          <Text className="text-lg text-red-500 text-center">{error}</Text>
+        </View>
+      )}
+      {status === "idle" && !routeId && !busId && <IdleCard />}
+    </View>
+  );
+};
+
+const IdleCard = () => (
+  <View className="bg-blue-50 p-6 rounded-xl border border-blue-200">
+    <Text className="text-xl font-medium text-blue-700 text-center">Please select Route and Bus Name</Text>
+    <Text className="text-gray-500 text-center mt-2">Your transaction details will appear here</Text>
+  </View>
+);
+
+export default function Index() {
+  const [routeId, setRouteId] = useState(null);
+  const [busId, setBusId] = useState(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [status, setStatus] = useState("idle");
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+
+  const { data: routes } = useGetRoutesQuery();
+  const { data: buses } = useGetBusesQuery();
+
+  useEffect(() => {
+    NfcManager.start();
+    checkEssentialPermissions();
+  }, []);
+
+  const startNfcScanLoop = useCallback(async () => {
+    setIsScanning(true);
+    setStatus("scanning");
+
+    while (true) {
+      try {
+        console.log("🔄 Waiting for NFC...");
+        await NfcManager.requestTechnology(NfcTech.Ndef, {
+          alertMessage: "Tap your NFC card",
+        });
+        const tag = await NfcManager.getTag();
+        const uid = tag?.id ?? "UNKNOWN";
+
+        setStatus("processing");
+        console.log("✅ Scan Success:", uid);
+
+        const { coords } = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        });
+
+        const response = await apiClient.post("/payments/create-payment", {
+          userId: "xxxx",
+          routeId: routeId,
+          busId: busId,
+          scheduleId: "xxxxx",
+          nfcUid: uid,
+          coords: [coords.longitude, coords.latitude],
+        });
+        playSound("success");
+        setResult(response);
+        await new Promise((res) => setTimeout(res, 5000));
+      } catch (error) {
+        playSound("error");
+        setStatus("fail");
+        setError(error?.response?.data?.errorMessages[0]?.message);
+        await new Promise((res) => setTimeout(res, 3000));
+      } finally {
+        setStatus("scanning");
+        setIsScanning(false);
+        await new Promise((res) => setTimeout(res, 800));
+      }
+    }
+  }, [routeId, busId]);
+
+  // const startNfcScanLoop = async () => {
+  //   setIsScanning(true);
+  //   setStatus("scanning");
+  //   try {
+  //     setStatus("processing");
+  //     const { coords } = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+  //     const response = await apiClient.post("/payments/create-payment", {
+  //       userId: "xxxx",
+  //       routeId,
+  //       busId,
+  //       scheduleId: "xxxxx",
+  //       nfcUid: "04357972217680",
+  //       coords: [coords.longitude, coords.latitude],
+  //     });
+  //     playSound("success");
+  //     setResult(response);
+  //     setStatus("success");
+  //     await new Promise((res) => setTimeout(res, 5000));
+  //   } catch (error) {
+  //     playSound("error");
+  //     setStatus("fail");
+  //     setError(error?.response?.data?.errorMessages[0]?.message);
+  //     await new Promise((res) => setTimeout(res, 3000));
+  //   } finally {
+  //     setStatus("scanning");
+  //     setIsScanning(false);
+  //     await new Promise((res) => setTimeout(res, 800));
+  //   }
+  // };
+
+  return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white", paddingHorizontal: 14 }}>
       <Navbar />
 
-      <View className="bg-primary-500 p-4 rounded-xl mb-5">
-        {/* --------- Route Picker --------- */}
-        <View className="flex flex-row items-center bg-white border border-muted-300 rounded-xl px-3 my-2">
-          <MaterialCommunityIcons name="routes" size={24} color="#24204DE6" />
-          <Picker
-            selectedValue={routeId}
-            onValueChange={(val) => {
-              setRouteId(val);
-              setBusId(null);
-            }}
-            style={{ flex: 1 }}
-            enabled={!isScanning}
-          >
-            <Picker.Item label="Select a route" value={null} />
-            {routes?.map((route: any) => (
-              <Picker.Item key={route._id} label={route.routeName} value={route._id} />
-            ))}
-          </Picker>
-        </View>
-
-        {/* --------- Bus Picker --------- */}
-
-        <View className="flex flex-row items-center bg-white border border-muted-300 rounded-xl px-3 my-2">
-          <MaterialCommunityIcons name="bus" size={22} color="#24204DE6" />
-          <Picker
-            selectedValue={busId}
-            onValueChange={(val) => setBusId(val)}
-            style={{ flex: 1 }}
-            enabled={!isScanning}
-          >
-            <Picker.Item label="Select a bus" value={null} />
-            {buses?.map((bus: any) => (
-              <Picker.Item key={bus._id} label={bus.name} value={bus._id} />
-            ))}
-          </Picker>
-        </View>
+      <View className="bg-primary-500 p-5 rounded-2xl mb-6 shadow-md">
+        <RoutePicker
+          routeId={routeId}
+          setRouteId={setRouteId}
+          setBusId={setBusId}
+          isScanning={isScanning}
+          routes={routes}
+        />
+        <BusPicker busId={busId} setBusId={setBusId} isScanning={isScanning} buses={buses} />
       </View>
 
-      {/* Scan Button */}
-      {/* {!isScanning && routeId && busId && ( */}
-      <View className="">
-        <Button title="Start Scanning" onPress={startNfcScanLoop} />
-      </View>
-      {/* )} */}
-
-      {/* Animation Display */}
-      <View className="flex-1 items-center mb-2 justify-center bg-white p-6 border border-primary-200 shadow-md rounded-xl">
-        {/* Animation Container */}
-        <View className="">{renderAnimation()}</View>
-
-        {/* Status Messages */}
-        {status === "scanning" && (
-          <>
-            <Text className="text-2xl font-medium  mb-4 text-center">Please Scan Your Card</Text>
-            <Text className="text-md  text-gray-800 mb-4 text-center">Hold your card to the back of the phone.</Text>
-          </>
-        )}
-
-        {status === "processing" && (
-          <View className="flex items-center">
-            <ActivityIndicator size="large" color="#2563eb" />
-            <Text className="text-2xl font-medium text-blue-600 my-4">Processing...</Text>
-          </View>
-        )}
-
-        {/* Success State */}
-        {status === "success" && (
-          <View className="w-full max-w-md bg-white rounded-xl ">
-            <Text className="text-3xl font-bold text-green-600 text-center mb-4">{result?.message}</Text>
-
-            <View className="space-y-4">
-              <View className="flex-row justify-between border-b pb-2">
-                <Text className="text-lg font-medium text-gray-600">Stopage:</Text>
-                <Text className="text-2xl font-semibold">
-                  {result?.data.startStopage}
-                  {result?.data.endStopage && ` → ${result.data.endStopage}`}
-                </Text>
-              </View>
-
-              {result?.data.fare >= 0 && (
-                <View className="flex-row justify-between border-b pb-2">
-                  <Text className="text-lg font-medium text-gray-600">Fare:</Text>
-                  <Text className="text-lg font-bold text-blue-700">{result?.data.fare} BDT</Text>
-                </View>
-              )}
-
-              {result?.data.distanceInKm && (
-                <View className="flex-row justify-between border-b pb-2">
-                  <Text className="text-lg font-medium text-gray-600">Distance:</Text>
-                  <Text className="text-lg font-semibold">{result?.data.distanceInKm.toFixed(2)} KM</Text>
-                </View>
-              )}
-              <View className="flex-row justify-between border-b pb-2">
-                <Text className="text-lg font-medium text-gray-600">Passenger:</Text>
-                <Text className="text-lg">{result?.data.userName}</Text>
-              </View>
-
-              <View className="flex-row justify-between">
-                <Text className="text-lg font-medium text-gray-600">Balance:</Text>
-                <Text className="text-lg font-bold">{result?.data.userBalance} BDT</Text>
-              </View>
-            </View>
-          </View>
-        )}
-
-        {/* Error State */}
-        {status === "fail" && (
-          <View className="w-full max-w-md bg-red-50 rounded-xl p-6 border border-red-200">
-            <Text className="text-2xl font-bold text-red-600 text-center mb-2">Transaction Failed</Text>
-            <Text className="text-lg text-red-500 text-center">{error}</Text>
-          </View>
-        )}
-
-        {/* Idle State */}
-        {!routeId && !busId && (
-          <View className="bg-blue-50 p-6 rounded-xl border border-blue-200">
-            <Text className="text-xl font-medium text-blue-700 text-center">Please select Route and Bus Name</Text>
-            <Text className="text-gray-500 text-center mt-2">Your transaction details will appear here</Text>
-          </View>
-        )}
+      <View className="flex-1">
+        {status == "idle" && <ScanButton onPress={startNfcScanLoop} isDisabled={false}/>}
+        <ScanStatusDisplay status={status} error={error} result={result} routeId={routeId} busId={busId} />
       </View>
     </SafeAreaView>
   );

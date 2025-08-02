@@ -12,7 +12,7 @@ const Navbar = () => {
       {/* Logo on the left */}
       <View className="flex-row items-center">
         {/* <Image source={busImage} className="rounded-full" resizeMode="contain" style={{ width: 35, height: 35 }} /> */}
-        <Text className="text-black text-xl font-semibold">CHOLO</Text>
+        <Text className="text-black text-xl font-semibold">CholoPay</Text>
       </View>
 
       {/* Settings icon on the right */}
