@@ -4,6 +4,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import apiClient from "../../config/axiosConfig";
 import { makeUpperCaseAndRemoveUnderscore } from "../../utils/textUtil";
+import UserLocation from "./UserLocation";
 
 // Configure leaflet icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -16,15 +17,6 @@ L.Icon.Default.mergeOptions({
 // Custom icons
 const checkInIcon = new L.Icon({
   iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
-
-const checkOutIcon = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -120,7 +112,7 @@ const MapPage = () => {
           clearInterval(interval);
           return prev;
         });
-      }, 300);
+      }, 200);
     }
     return () => clearInterval(interval);
   }, [simulatedBusPositions, tripState.status]);
@@ -135,7 +127,7 @@ const MapPage = () => {
         routeId: currentRoute._id,
         busId: "685c430465f521c175a4ca79",
         scheduleId: "xxxxxx",
-        nfcUid: "43d5072217680",
+        nfcUid: "04357972217680",
         coords: [clickedPosition[1], clickedPosition[0]],
       });
 
@@ -167,7 +159,7 @@ const MapPage = () => {
         routeId: currentRoute._id,
         busId: "685c430465f521c175a4ca79",
         scheduleId: "xxxxxx",
-        nfcUid: "43d5072217680",
+        nfcUid: "04357972217680",
         coords: currentCoords,
       });
 
@@ -252,21 +244,33 @@ const MapPage = () => {
           </button>
         </div>
 
-        {/* {tripState.fare !== null && ( */}
-        <div className="ml-auto bg-yellow-100 px-4 py-1 rounded">
-          {/* Start stopage and endstpage from tripState */}
-          <span className="font-bold"></span> {tripState?.nearestStopage?.startStopage} -{" "}
-          {tripState?.nearestStopage?.endStopage} <br />
-          <span className="font-bold">Fare:</span> ৳{tripState.fare}
+        <div className="ml-auto bg-yellow-50 border border-yellow-200 px-4 py-2 rounded-lg shadow-sm text-sm text-gray-700 leading-relaxed">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-yellow-700 font-semibold">🛑 Stopage:</span>
+            <span className="capitalize font-medium">
+              {tripState?.nearestStopage?.startStopage.split("_").join(" ")}
+              {tripState?.nearestStopage?.endStopage && (
+                <>
+                  {" "}
+                  <span className="text-black text-xl"> ➪ </span>{" "}
+                  {tripState?.nearestStopage?.endStopage.split("_").join(" ")}
+                </>
+              )}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-yellow-700 font-semibold">💳 Fare:</span>
+            <span className="font-medium">৳{tripState.fare}</span>
+          </div>
         </div>
-        {/* )} */}
       </div>
 
       {/* Map Container */}
       <div className="flex-1 relative">
         <MapContainer center={[23.80497844151923, 90.3623591658772]} zoom={13} style={{ height: "90%", width: "100%" }}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
+          {/* <UserLocation /> */}
           {/* Full Route Line */}
           {currentRoute?.routeLine && (
             <Polyline positions={currentRoute.routeLine.map(convertToLatLng)} color="blue" weight={3} opacity={0.8} />
@@ -298,7 +302,7 @@ const MapPage = () => {
 
           {/* Check-Out Marker */}
           {tripState.checkOut && (
-            <Marker position={tripState.checkOut} icon={checkOutIcon}>
+            <Marker position={tripState.checkOut} icon={checkInIcon}>
               <Popup>Check-Out Point</Popup>
             </Marker>
           )}
