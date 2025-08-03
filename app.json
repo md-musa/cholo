@@ -85,7 +85,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "DVELOPMENT_SERVER_URL": "http://192.168.1.13:4000",
+      "DVELOPMENT_SERVER_URL": "http://192.168.0.103:4000",
       "PRODUCTION_SERVER_URL": "https://choloserver-production.up.railway.app",
       "router": {
         "origin": false

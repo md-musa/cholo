@@ -1,6 +1,6 @@
 // --- At the top of your Index.tsx file ---
 import React, { useCallback, useEffect, useState } from "react";
-import { View, Text, Button, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Text, Button, ActivityIndicator, StyleSheet, InteractionManager } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import * as Location from "expo-location";
 import NfcManager, { NfcTech } from "react-native-nfc-manager";
@@ -16,6 +16,7 @@ import paymentSuccessImage from "@/assets/animatedImages/successfully-done.json"
 import paymentFailureImage from "@/assets/animatedImages/payment-failed.json";
 import apiClient from "@/config/axiosInstance";
 import SuccessCard from "@/components/homeComponents/SuccessCard";
+import { runOnJS } from "react-native-reanimated";
 
 const RoutePicker = ({ routeId, setRouteId, setBusId, isScanning, routes }) => (
   <View className="flex flex-row items-center bg-white border border-muted-300 rounded-2xl px-3 mb-3">
@@ -129,21 +130,24 @@ export default function Index() {
     checkEssentialPermissions();
   }, []);
 
-  const startNfcScanLoop = useCallback(async () => {
-    setIsScanning(true);
-    setStatus("scanning");
+  const startNfcScanLoop = useCallback(() => {
+    if (!routeId || !busId || isScanning) return;
 
-    while (true) {
+    setIsScanning(true);
+
+    const scan = async () => {
+      setStatus("scanning");
+
       try {
         console.log("🔄 Waiting for NFC...");
         await NfcManager.requestTechnology(NfcTech.Ndef, {
           alertMessage: "Tap your NFC card",
         });
+
         const tag = await NfcManager.getTag();
         const uid = tag?.id ?? "UNKNOWN";
 
         setStatus("processing");
-        console.log("✅ Scan Success:", uid);
 
         const { coords } = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.High,
@@ -151,57 +155,43 @@ export default function Index() {
 
         const response = await apiClient.post("/payments/create-payment", {
           userId: "xxxx",
-          routeId: routeId,
-          busId: busId,
+          routeId,
+          busId,
           scheduleId: "xxxxx",
           nfcUid: uid,
           coords: [coords.longitude, coords.latitude],
         });
-        playSound("success");
+
+        InteractionManager.runAfterInteractions(() => {
+          playSound("success");
+        });
         setResult(response);
+        setStatus("success");
+
+        // Wait before restarting scan
         await new Promise((res) => setTimeout(res, 5000));
       } catch (error) {
-        playSound("error");
+        InteractionManager.runAfterInteractions(() => {
+          playSound("error");
+        });
         setStatus("fail");
-        setError(error?.response?.data?.errorMessages[0]?.message);
-        await new Promise((res) => setTimeout(res, 3000));
-      } finally {
-        setStatus("scanning");
-        setIsScanning(false);
-        await new Promise((res) => setTimeout(res, 800));
-      }
-    }
-  }, [routeId, busId]);
+        setError(error?.response?.data?.errorMessages?.[0]?.message || "Scan failed");
 
-  // const startNfcScanLoop = async () => {
-  //   setIsScanning(true);
-  //   setStatus("scanning");
-  //   try {
-  //     setStatus("processing");
-  //     const { coords } = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-  //     const response = await apiClient.post("/payments/create-payment", {
-  //       userId: "xxxx",
-  //       routeId,
-  //       busId,
-  //       scheduleId: "xxxxx",
-  //       nfcUid: "04357972217680",
-  //       coords: [coords.longitude, coords.latitude],
-  //     });
-  //     playSound("success");
-  //     setResult(response);
-  //     setStatus("success");
-  //     await new Promise((res) => setTimeout(res, 5000));
-  //   } catch (error) {
-  //     playSound("error");
-  //     setStatus("fail");
-  //     setError(error?.response?.data?.errorMessages[0]?.message);
-  //     await new Promise((res) => setTimeout(res, 3000));
-  //   } finally {
-  //     setStatus("scanning");
-  //     setIsScanning(false);
-  //     await new Promise((res) => setTimeout(res, 800));
-  //   }
-  // };
+        // Wait before restarting scan
+        await new Promise((res) => setTimeout(res, 4000));
+      } finally {
+        await NfcManager.cancelTechnologyRequest();
+        setStatus("idle");
+
+        // Auto-restart after small delay
+        setTimeout(() => {
+          scan(); // restart scan
+        }, 500);
+      }
+    };
+
+    scan(); // Initial call
+  }, [routeId, busId, isScanning]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white", paddingHorizontal: 14 }}>
@@ -219,7 +209,7 @@ export default function Index() {
       </View>
 
       <View className="flex-1">
-        {status == "idle" && <ScanButton onPress={startNfcScanLoop} isDisabled={false}/>}
+        {status == "idle" && <ScanButton onPress={startNfcScanLoop} isDisabled={false} />}
         <ScanStatusDisplay status={status} error={error} result={result} routeId={routeId} busId={busId} />
       </View>
     </SafeAreaView>

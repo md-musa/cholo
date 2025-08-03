@@ -25,6 +25,7 @@ const Login = () => {
   const handleLogin = async () => {
     try {
       const result = await login({ email, password }).unwrap();
+      console.log("Login Result:", result);
 
       const { accessToken, user } = result;
 
@@ -35,7 +36,8 @@ const Login = () => {
       ToastUtil.success(`Welcome, ${user.name}!`);
       router.replace("/home");
     } catch (err) {
-      // console.log("🟥 Login Error", JSON.stringify(err, null, 2));
+      console.log(err)
+      console.log("🟥 Login Error", JSON.stringify(err, null, 2));
       ToastUtil.error(err?.response?.data.errorMessages[0].message || "Login error");
     }
   };

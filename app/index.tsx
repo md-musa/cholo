@@ -99,7 +99,7 @@ const Index = () => {
 
       <View className="mt-10 mb-10">
         <TouchableOpacity
-          onPress={() => router.push("/login")}
+          onPress={() => router.push("/home")}
           className="my-2 flex-row items-center justify-center bg-secondary-900 py-3 rounded-full mx-6"
           activeOpacity={0.8}
         >
