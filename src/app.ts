@@ -41,7 +41,7 @@ app.use("/api/v1/payments", PaymentRoute);
 app.use("/api/v1/auth", AuthRouter);
 app.use("/api/v1/buses", BusRouter);
 app.use("/api/v1/routes", RouteRouter);
-app.use("/api/v1/trips", TripRouter);
+// app.use("/api/v1/trips", TripRouter);
 app.use("/api/v1/logs", ErrorLogRoute);
 app.use("/api/v1/schedules", ScheduleRouter);
 app.use("/api/v1/fare-matrices", FareMatrixRoute);
