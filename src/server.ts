@@ -4,9 +4,13 @@ import app, { socketHandler } from "./app";
 import mongoose from "mongoose";
 import config from "./config";
 import { logger } from "./shared/logger";
+<<<<<<< HEAD
 import dotenv from "dotenv";
 
 dotenv.config();
+=======
+
+>>>>>>> 4b24f452528cf3493d8ff4bcd08834eb06067722
 export let expressServer: ExpressServer;
 export let io: SocketIOServer;
 
@@ -35,7 +39,10 @@ const main = async () => {
     io.on("connection", socketHandler);
 
   } catch (error) {
+<<<<<<< HEAD
     console.log(error?.message || "Unknown error");
+=======
+>>>>>>> 4b24f452528cf3493d8ff4bcd08834eb06067722
     console.log("❌ Database connection failed\n", error);
     process.exit(1);
   }
