@@ -9,6 +9,7 @@ export const routeApi = createApi({
   endpoints: (builder) => ({
     getRoutes: builder.query<IRoute[], void>({
       query: () => ({ url: "/routes", method: "GET" }),
+      transformResponse: (response: any) => response.data || response,
     }),
   }),
 });

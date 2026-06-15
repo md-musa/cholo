@@ -29,16 +29,14 @@ export default function Login() {
 
     try {
       const result = await login({ email: email.trim(), password }).unwrap();
-      const { accessToken, user } = result;
-      const route = user.routeId ?? null;
+      const { accessToken, user } = (result as any).data || result;
 
       await AsyncStorage.setItem(ASYNC_STORAGE_KEYS.AUTH_TOKEN, accessToken);
-      await AsyncStorage.setItem(ASYNC_STORAGE_KEYS.CURRENT_ROUTE, JSON.stringify(route));
 
       dispatch(
         setCredentials({
           user,
-          route,
+          route: null,
           accessToken,
         }),
       );
@@ -46,6 +44,7 @@ export default function Login() {
       ToastUtil.success("POS device authenticated.");
       router.replace("/home");
     } catch (error: any) {
+      console.log(error);
       console.log("Login error:", JSON.stringify(error, null, 2));
       ToastUtil.error(error?.response?.data?.message || error?.data?.message || "Login failed.");
     }

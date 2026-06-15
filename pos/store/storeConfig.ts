@@ -16,7 +16,9 @@ export const store = configureStore({
     [tripApi.reducerPath]: tripApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(authApi.middleware, routeApi.middleware, busApi.middleware, tripApi.middleware),
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }).concat(authApi.middleware, routeApi.middleware, busApi.middleware, tripApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

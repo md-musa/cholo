@@ -9,6 +9,7 @@ export const busApi = createApi({
   endpoints: (builder) => ({
     getBuses: builder.query<IBus[], void>({
       query: () => ({ url: "/buses", method: "GET" }),
+      transformResponse: (response: any) => response.data || response,
     }),
   }),
 });

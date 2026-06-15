@@ -8,7 +8,7 @@ export interface AuthUser {
   name?: string;
   role: USER_ROLES;
   email: string;
-  routeId?: IRoute | null;
+  //routeId?: IRoute | null;
 }
 
 interface AuthState {
