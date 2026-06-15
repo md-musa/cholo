@@ -1,128 +1,183 @@
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
-import React, { useState } from "react";
+import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MaterialCommunityIcons, MaterialIcons, Ionicons } from "@expo/vector-icons";
-import Toast from "react-native-toast-message";
-import { Link, useRouter } from "expo-router";
-import { ToastUtil } from "@/utils/toastUtil";
-import LoadingIndicator from "@/components/UI/LoadingIndicator";
-import { useLoginMutation } from "@/store/features/auth/authApi";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ASYNC_STORAGE_KEYS } from "@/constants";
-import { useAppDispatch } from "@/store/storeConfig";
-import { setCredentials } from "@/store/features/auth/authSlice";
-import { colors } from "@/config/colors";
+import { Ionicons, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
-const Login = () => {
-  const dispatch = useAppDispatch();
+import LoadingIndicator from "@/components/UI/LoadingIndicator";
+import { ASYNC_STORAGE_KEYS } from "@/constants";
+import { colors } from "@/config/colors";
+import { useLoginMutation } from "@/store/features/auth/authApi";
+import { setCredentials } from "@/store/features/auth/authSlice";
+import { useAppDispatch } from "@/store/storeConfig";
+import { ToastUtil } from "@/utils/toastUtil";
+
+export default function Login() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
   const [login, { isLoading }] = useLoginMutation();
 
   const handleLogin = async () => {
-    try {
-      const result = await login({ email, password }).unwrap();
-      console.log("Login Result:", result);
+    if (!email.trim() || !password.trim()) {
+      ToastUtil.error("Enter your email and password.");
+      return;
+    }
 
+    try {
+      const result = await login({ email: email.trim(), password }).unwrap();
       const { accessToken, user } = result;
+      const route = user.routeId ?? null;
 
       await AsyncStorage.setItem(ASYNC_STORAGE_KEYS.AUTH_TOKEN, accessToken);
-      await AsyncStorage.setItem(ASYNC_STORAGE_KEYS.CURRENT_ROUTE, JSON.stringify(user.routeId));
+      await AsyncStorage.setItem(ASYNC_STORAGE_KEYS.CURRENT_ROUTE, JSON.stringify(route));
 
-      dispatch(setCredentials({ user, route: user.routeId, accessToken }));
-      ToastUtil.success(`Welcome, ${user.name}!`);
+      dispatch(
+        setCredentials({
+          user,
+          route,
+          accessToken,
+        }),
+      );
+
+      ToastUtil.success("POS device authenticated.");
       router.replace("/home");
-    } catch (err) {
-      console.log(err)
-      console.log("🟥 Login Error", JSON.stringify(err, null, 2));
-      ToastUtil.error(err?.response?.data.errorMessages[0].message || "Login error");
+    } catch (error: any) {
+      console.log("Login error:", JSON.stringify(error, null, 2));
+      ToastUtil.error(error?.response?.data?.message || error?.data?.message || "Login failed.");
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 justify-end px-10 mb-10">
-        {/* Title and Caption (original version) */}
-        <View className="">
-          <Text className="text-title-2 font-semibold text-center mb-4">Track Your Campus Buses</Text>
-          <Text className="text-body text-center text-muted-500 mb-10">
-            Login to view real-time bus locations and schedules
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.heroSection}>
+          <View style={styles.heroIcon}>
+            <MaterialCommunityIcons name="bus-marker" size={32} color="white" />
+          </View>
+          <Text style={styles.title}>Bus POS</Text>
+          <Text style={styles.subtitle}>
+            Secure operator login for fare collection and real-time bus location sharing.
           </Text>
         </View>
 
-        {/* Form aligned to bottom */}
-        <View className="">
-          {/* Email Input */}
-          <View className="my-5">
-            <View className="flex-row items-center gap-2 my-1">
-              <MaterialCommunityIcons name="email-outline" size={20} color={colors.muted[700]} />
-              <Text className="text-lg text-muted-700">University Mail</Text>
+        <View style={styles.card}>
+          <View style={styles.fieldBlock}>
+            <Text style={styles.label}>Email</Text>
+            <View style={styles.inputRow}>
+              <MaterialCommunityIcons name="email-outline" size={20} color={colors.muted[500]} />
+              <TextInput
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                placeholder="operator@company.com"
+                style={styles.input}
+                editable={!isLoading}
+              />
             </View>
-            <TextInput
-              value={email}
-              onChangeText={setEmail}
-              placeholder="Enter your university mail"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              className="border border-muted-300 rounded-xl px-4 py-4"
-            />
           </View>
 
-          {/* Password Input with toggle */}
-          <View className="my-3">
-            <View className="flex-row items-center gap-2 my-1">
-              <MaterialIcons name="password" size={20} color={colors.muted[700]} />
-              <Text className="text-lg text-muted-700">Password</Text>
-            </View>
-            <View className="flex-row items-center border border-muted-300 rounded-xl px-4 py-4">
+          <View>
+            <Text style={styles.label}>Password</Text>
+            <View style={styles.inputRow}>
+              <MaterialIcons name="lock-outline" size={20} color={colors.muted[500]} />
               <TextInput
                 value={password}
                 onChangeText={setPassword}
-                placeholder="Enter your password"
                 secureTextEntry={!showPassword}
-                className="flex-1"
+                placeholder="Enter password"
+                style={styles.input}
+                editable={!isLoading}
               />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <Ionicons name={showPassword ? "eye-off" : "eye"} size={20} color="gray" />
+              <TouchableOpacity onPress={() => setShowPassword((value) => !value)} disabled={isLoading}>
+                <Ionicons name={showPassword ? "eye-off" : "eye"} size={20} color={colors.muted[500]} />
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* Login Button */}
-          <View className="mt-6">
-            <TouchableOpacity
-              onPress={handleLogin}
-              disabled={isLoading}
-              className="w-full bg-secondary-900 p-3 rounded-xl flex-row justify-center"
-            >
-              {isLoading ? (
-                <LoadingIndicator color="white" />
-              ) : (
-                <Text className="text-body text-center text-white">Login</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-
-          {/* Forgot Password and Sign Up Links */}
-          <View className="mt-4 items-center">
-            <TouchableOpacity className="mb-4">
-              <Text className="text-secondary-700">Forgot Password?</Text>
-            </TouchableOpacity>
-            <View className="flex-row">
-              <Text className="text-muted-600">Don't have an account? </Text>
-              <Link href="/register" className="text-secondary-700">
-                Sign Up
-              </Link>
-            </View>
-          </View>
+          <TouchableOpacity onPress={handleLogin} disabled={isLoading} style={styles.loginButton}>
+            {isLoading ? <LoadingIndicator color="white" /> : <Text style={styles.loginButtonText}>Login</Text>}
+          </TouchableOpacity>
         </View>
       </View>
-      <Toast />
     </SafeAreaView>
   );
-};
+}
 
-export default Login;
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#020617",
+  },
+  container: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingVertical: 40,
+    justifyContent: "space-between",
+  },
+  heroSection: {
+    marginTop: 40,
+  },
+  heroIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    backgroundColor: "#10b981",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 24,
+  },
+  title: {
+    color: "#ffffff",
+    fontSize: 36,
+    fontWeight: "700",
+  },
+  subtitle: {
+    color: "#cbd5e1",
+    fontSize: 16,
+    marginTop: 12,
+    lineHeight: 24,
+  },
+  card: {
+    backgroundColor: "#ffffff",
+    borderRadius: 24,
+    padding: 20,
+  },
+  fieldBlock: {
+    marginBottom: 16,
+  },
+  label: {
+    color: "#334155",
+    marginBottom: 8,
+    fontWeight: "600",
+  },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+  },
+  input: {
+    flex: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    color: "#0f172a",
+  },
+  loginButton: {
+    backgroundColor: "#10b981",
+    borderRadius: 16,
+    paddingVertical: 16,
+    marginTop: 24,
+    alignItems: "center",
+  },
+  loginButtonText: {
+    color: "#ffffff",
+    fontWeight: "600",
+  },
+});

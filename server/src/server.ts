@@ -1,16 +1,21 @@
+import dns from "dns";
 import { Server as SocketIOServer } from "socket.io";
 import { Server as ExpressServer } from "http";
 import app, { socketHandler } from "./app";
 import mongoose from "mongoose";
 import config from "./config";
 import { logger } from "./shared/logger";
-<<<<<<< HEAD
 import dotenv from "dotenv";
 
 dotenv.config();
-=======
 
->>>>>>> 4b24f452528cf3493d8ff4bcd08834eb06067722
+if (config.DATABASE_URL?.startsWith("mongodb+srv://")) {
+  console.log("🔎 MongoDB SRV connection string detected.");
+  console.log("🌐 Setting DNS resolver to public DNS servers for SRV lookup fallback.");
+  dns.setServers(["8.8.8.8", "1.1.1.1"]);
+  console.log("DNS servers:", dns.getServers());
+}
+
 export let expressServer: ExpressServer;
 export let io: SocketIOServer;
 
@@ -39,10 +44,7 @@ const main = async () => {
     io.on("connection", socketHandler);
 
   } catch (error) {
-<<<<<<< HEAD
     console.log(error?.message || "Unknown error");
-=======
->>>>>>> 4b24f452528cf3493d8ff4bcd08834eb06067722
     console.log("❌ Database connection failed\n", error);
     process.exit(1);
   }

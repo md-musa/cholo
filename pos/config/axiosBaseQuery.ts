@@ -1,11 +1,12 @@
+import { AxiosError, AxiosRequestConfig } from "axios";
+
 import axiosInstance from "./axiosInstance";
-import { AxiosRequestConfig, AxiosError } from "axios";
 
 interface BaseQueryArgs {
   url: string;
   method: AxiosRequestConfig["method"];
-  data?: any;
-  params?: any;
+  data?: unknown;
+  params?: unknown;
 }
 
 export const axiosBaseQuery =
@@ -13,9 +14,10 @@ export const axiosBaseQuery =
   async ({ url, method, data, params }: BaseQueryArgs) => {
     try {
       const result = await axiosInstance({ url, method, data, params });
-      return { data: result.data };
+      return { data: result };
     } catch (error) {
       const err = error as AxiosError;
+
       return {
         error: {
           status: err.response?.status,

@@ -1,28 +1,27 @@
-import { STUDENT_DENSITY, USER_ROLES } from "@/constants";
+import { BUS_STATUS, BUS_TYPES, USER_ROLES } from "@/constants";
 
 export interface IRoute {
   _id: string;
-  routeNo: string;
+  routeNo?: string;
   routeName: string;
-  totalDistance?: number; // in kilometers
-  estimatedTime?: number; // in minutes
-  wayline?: unknown; // matches Mongoose Mixed
-  assignedBuses?: string[]; // array of ObjectIds as strings
-  waypoints?: {
-    location?: string;
-    latitude?: number;
-    longitude?: number;
-    studentDensity?: STUDENT_DENSITY.LOW | STUDENT_DENSITY.MEDIUM | STUDENT_DENSITY.HIGH;
-  }[];
+  totalDistance?: number;
+  estimatedTime?: number;
 }
 
 export interface IUser {
+  _id: string;
   name: string;
   email: string;
-  role: USER_ROLES.ADMIN | USER_ROLES.EMPLOYEE | USER_ROLES.STUDENT | USER_ROLES.SUPER_ADMIN;
-  phoneNumber: string;
-  houseLocation: {
-    latitude: number;
-    longitude: number;
-  };
+  role: USER_ROLES;
+  phoneNumber?: string;
+  routeId?: IRoute | null;
+}
+
+export interface IBus {
+  _id: string;
+  name: string;
+  capacity?: number;
+  busType?: BUS_TYPES;
+  status?: BUS_STATUS;
+  assignedRouteId?: string;
 }

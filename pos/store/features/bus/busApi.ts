@@ -1,22 +1,16 @@
-// src/features/bus/busApi.ts
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { axiosBaseQuery } from '@/config/axiosBaseQuery'; // your custom axios base query
+import { createApi } from "@reduxjs/toolkit/query/react";
+
+import { axiosBaseQuery } from "@/config/axiosBaseQuery";
+import { IBus } from "@/store/features/bus/busInterface";
 
 export const busApi = createApi({
-  reducerPath: 'busApi',
+  reducerPath: "busApi",
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['Bus'],
   endpoints: (builder) => ({
-    getBuses: builder.query({
-      query: () => ({ url: '/buses', method: 'GET' }),
-      providesTags: ['Bus'],
-    }),
-    
-    getBusById: builder.query({
-      query: (id: string) => ({ url: `/buses/${id}`, method: 'GET' }),
-      providesTags: (_result, _err, id) => [{ type: 'Bus', id }],
+    getBuses: builder.query<IBus[], void>({
+      query: () => ({ url: "/buses", method: "GET" }),
     }),
   }),
 });
 
-export const { useGetBusesQuery, useGetBusByIdQuery } = busApi;
+export const { useGetBusesQuery } = busApi;

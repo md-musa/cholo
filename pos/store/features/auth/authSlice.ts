@@ -1,13 +1,14 @@
-// src/store/slices/authSlice.ts
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { IUser, IRoute } from "@/store/features/route/route.interface";
+import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+
 import { USER_ROLES } from "@/constants";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { IRoute, IUser } from "@/store/features/route/route.interface";
 
 export interface AuthUser {
   _id: string;
+  name?: string;
   role: USER_ROLES;
   email: string;
+  routeId?: IRoute | null;
 }
 
 interface AuthState {

@@ -1,9 +1,8 @@
 {
   "expo": {
-    "name": "Cholo",
-    "slug": "cholo",
-    "scheme": "cholo",
-    "owner": "mdmusa12",
+    "name": "Bus POS",
+    "slug": "bus-pos",
+    "scheme": "buspos",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/play_store_512.png",
@@ -12,13 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "UIBackgroundModes": [
-          "location",
-          "fetch"
-        ],
-        "NSLocationAlwaysUsageDescription": "We need your location even in the background.",
-        "NSLocationWhenInUseUsageDescription": "We need your location while using the app.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "To share your live location even in background."
+        "NSLocationWhenInUseUsageDescription": "The POS app uses GPS during operation for fare processing and live bus tracking."
       }
     },
     "android": {
@@ -30,29 +23,16 @@
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
-        "ACCESS_BACKGROUND_LOCATION",
-        "FOREGROUND_SERVICE",
-        "WAKE_LOCK",
-        "FOREGROUND_SERVICE_LOCATION",
-        "NFC"
-      ],
-      "foregroundService": {
-        "notificationTitle": "Live Bus Tracking",
-        "notificationBody": "Sharing your location in real-time."
-      },
-      "intentFilters": [
-        {
-          "action": "VIEW",
-          "data": [
-            {
-              "scheme": "cholo"
-            }
-          ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
-        }
+        "NFC",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.NFC",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "NFC",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.NFC"
       ]
     },
     "web": {
@@ -71,12 +51,10 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "@maplibre/maplibre-react-native",
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow CHOLO app to use your location.",
-          "isBackgroundLocationEnabled": true
+          "locationWhenInUsePermission": "Allow Bus POS to use your location while the app is open."
         }
       ],
       "react-native-nfc-manager"
@@ -85,17 +63,21 @@
       "typedRoutes": true
     },
     "extra": {
-      "DVELOPMENT_SERVER_URL": "http://192.168.0.103:4000",
+      "DVELOPMENT_SERVER_URL": "http://192.168.0.106:4000",
       "PRODUCTION_SERVER_URL": "https://choloserver-production.up.railway.app",
       "router": {
         "origin": false
       },
       "eas": {
-        "projectId": "b808a2a4-e198-4985-aa38-2b226967eede"
-      },
-      "androidMetadata": {
-        "com.mapbox.token": "your_dummy_mapbox_token"
+        "projectId": "2f7a1a12-5644-48cb-ab2e-0b5267108892"
       }
+    },
+    "owner": "md_musa_dev",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/2f7a1a12-5644-48cb-ab2e-0b5267108892"
     }
   }
 }

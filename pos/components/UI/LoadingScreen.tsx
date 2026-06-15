@@ -1,7 +1,6 @@
 import { colors } from "@/config/colors";
 import React from "react";
-import { View } from "react-native";
-import { ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
 
 type LoadingScreenProps = {
   color?: string;
@@ -10,10 +9,19 @@ type LoadingScreenProps = {
 
 function LoadingScreen({ color = colors.secondary[600], size = "large" }: LoadingScreenProps) {
   return (
-    <View className="flex-1 justify-center items-center bg-white">
+    <View style={styles.container}>
       <ActivityIndicator size={size} color={color} />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+  },
+});
 
 export default LoadingScreen;
