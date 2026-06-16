@@ -15,13 +15,12 @@ export default function LocationSharingScreen() {
 
   // Auth & config state from Redux
   const { route, bus } = useAppSelector((state) => state.auth);
+  //console.log(route, bus);
 
   // Location sharing state from Context
   const {
     isSharingLocation,
-    activeTripId,
     lastLocationText,
-    isStartingTrip,
     handleLocationToggle,
   } = useLocationSharingContext();
 
@@ -86,44 +85,26 @@ export default function LocationSharingScreen() {
                 <Text style={styles.infoValue}>{lastLocationText}</Text>
               </View>
             </View>
-
-            {activeTripId && (
-              <View style={[styles.infoRow, styles.marginTop]}>
-                <Ionicons name="key-outline" size={20} color="#94a3b8" />
-                <View style={styles.infoTextContainer}>
-                  <Text style={styles.infoLabel}>Active Trip ID</Text>
-                  <Text style={styles.infoValue} numberOfLines={1}>
-                    {activeTripId}
-                  </Text>
-                </View>
-              </View>
-            )}
           </View>
 
           {/* Action Toggle Button */}
           <TouchableOpacity
             onPress={() => handleLocationToggle(route._id, bus)}
-            disabled={isStartingTrip}
             style={[
               styles.toggleBtn,
               isSharingLocation ? styles.btnStop : styles.btnStart,
-              isStartingTrip && styles.btnDisabled,
             ]}
           >
-            {isStartingTrip ? (
-              <ActivityIndicator color="white" size="small" />
-            ) : (
-              <View style={styles.btnContent}>
-                <Ionicons
-                  name={isSharingLocation ? "stop-circle-outline" : "play-circle-outline"}
-                  size={24}
-                  color="white"
-                />
-                <Text style={styles.toggleBtnText}>
-                  {isSharingLocation ? "Stop Broadcast" : "Start Broadcasting"}
-                </Text>
-              </View>
-            )}
+            <View style={styles.btnContent}>
+              <Ionicons
+                name={isSharingLocation ? "stop-circle-outline" : "play-circle-outline"}
+                size={24}
+                color="white"
+              />
+              <Text style={styles.toggleBtnText}>
+                {isSharingLocation ? "Stop Broadcast" : "Start Broadcasting"}
+              </Text>
+            </View>
           </TouchableOpacity>
         </View>
       </View>

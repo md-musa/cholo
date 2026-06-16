@@ -9,10 +9,9 @@ import { useAppDispatch } from "@/store/storeConfig";
 import { AuthUser, clearCredentials, setCredentials } from "@/store/features/auth/authSlice";
 
 interface DecodedToken {
-  _id: string;
-  name?: string;
+  userId: string;
   role: USER_ROLES;
-  email: string;
+  phoneNumber: string;
   exp?: number;
 }
 
@@ -38,7 +37,7 @@ export default function Index() {
 
         const decoded = jwtDecode<DecodedToken>(token);
         const isExpired = decoded.exp ? decoded.exp * 1000 <= Date.now() : false;
-
+        console.log("✅ token decodede:", decoded);
         if (isExpired) {
           await AsyncStorage.multiRemove([ASYNC_STORAGE_KEYS.AUTH_TOKEN, ASYNC_STORAGE_KEYS.CURRENT_ROUTE, "current_bus"]);
           dispatch(clearCredentials());
@@ -47,10 +46,9 @@ export default function Index() {
         }
 
         const user: AuthUser = {
-          _id: decoded._id,
-          name: decoded.name ?? "",
+          userId: decoded.userId,
+          phoneNumber: decoded.phoneNumber,
           role: decoded.role,
-          email: decoded.email,
         };
 
         dispatch(

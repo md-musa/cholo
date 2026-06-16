@@ -4,9 +4,7 @@ import { useAppSelector } from "@/store/storeConfig";
 
 interface LocationSharingContextType {
   isSharingLocation: boolean;
-  activeTripId: string | null;
   lastLocationText: string;
-  isStartingTrip: boolean;
   stopForegroundLocationSharing: () => void;
   startForegroundLocationSharing: (routeId: string | null, selectedBus: any) => Promise<void>;
   handleLocationToggle: (routeId: string | null, selectedBus: any) => Promise<void>;
@@ -16,6 +14,7 @@ const LocationSharingContext = createContext<LocationSharingContextType | undefi
 
 export function LocationSharingProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAppSelector((state) => state.auth);
+  console.log("✅ userid in locationContex: ", user);
   const locationSharing = useLocationSharing({ user });
 
   return (

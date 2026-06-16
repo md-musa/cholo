@@ -8,8 +8,6 @@ import { AuthRouter } from "./app/modules/auth/auth.route";
 import { BusRouter } from "./app/modules/bus/bus.route";
 import { UserRouter } from "./app/modules/user/user.route";
 import { RouteRouter } from "./app/modules/route/route.route";
-// import { TripRouter } from "./app/modules/liveLocation/trip.route";
-import { logger } from "./shared/logger";
 import { SOCKET_EVENTS } from "./constants";
 import { BusModel } from "./app/modules/bus/bus.model";
 import ApiError from "./errors/ApiError";
@@ -48,7 +46,6 @@ app.use("/api/v1/auth", AuthRouter);
 app.use("/api/v1/users", UserRouter);
 app.use("/api/v1/buses", BusRouter);
 app.use("/api/v1/routes", RouteRouter);
-// app.use("/api/v1/trips", TripRouter);
 app.use("/api/v1/logs", ErrorLogRoute);
 app.use("/api/v1/schedules", ScheduleRouter);
 app.use(globalErrorHandler);
@@ -62,24 +59,10 @@ app.use(routeNotFoundError);
 export const socketHandler = (socket: any) => {
   console.log(`🟢 New client connected: ${socket.id}`);
 
-  // 1️⃣ User joins a route-specific room
-  socket.on(SOCKET_EVENTS.JOIN_ROUTE, (routeId: string) => {
-    socket.join(routeId);
-    const currUserCnt = io.sockets.adapter.rooms.get(routeId)?.size;
-    console.log(`➕ Client ${socket.id} joined; cnt: ${currUserCnt}`);
-  });
-
-  // 2️⃣ Bus broadcasts location updates along with user count and host name
+  // 1️⃣ Bus broadcasts location updates
   socket.on(SOCKET_EVENTS.BROADCAST_BUS_LOCATION, broadcastLocation);
 
-  // 3️⃣ User leaves the route-specific room
-  socket.on("leave-room", (room: string) => {
-    socket.leave(room);
-    const currUserCnt = io.sockets.adapter.rooms.get(room)?.size;
-    console.log(`🚫 Client ${socket.id} left room ${room}, cnt: ${currUserCnt}`);
-  });
-
-  // 4️⃣ Handle disconnection
+  // 2️⃣ Handle disconnection
   socket.on("disconnect", () => {
     console.log(`🔴 Client disconnected: ${socket.id}`);
   });

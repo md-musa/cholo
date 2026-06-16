@@ -1,14 +1,12 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 import { USER_ROLES } from "@/constants";
-import { IRoute, IUser } from "@/store/features/route/route.interface";
+import { IRoute } from "@/store/features/route/route.interface";
 
 export interface AuthUser {
-  _id: string;
-  name?: string;
+  phoneNumber: string;
   role: USER_ROLES;
-  email: string;
-  //routeId?: IRoute | null;
+  userId: string;
 }
 
 interface AuthState {

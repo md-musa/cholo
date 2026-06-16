@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Alert } from "react-native";
 import * as Location from "expo-location";
 import socket from "@/config/socketIoConfig";
-import { BUS_TYPES, SOCKET_EVENTS } from "@/constants";
-import { useCreateTripMutation } from "@/store/features/trip/tripApi";
+import { SOCKET_EVENTS } from "@/constants";
 import { requestForegroundLocationPermission } from "@/utils/payUtil";
 import { ToastUtil } from "@/utils/toastUtil";
 
@@ -12,9 +11,7 @@ interface UseLocationSharingProps {
 }
 
 export function useLocationSharing({ user }: UseLocationSharingProps) {
-  const [createTrip, { isLoading: isStartingTrip }] = useCreateTripMutation();
   const [isSharingLocation, setIsSharingLocation] = useState(false);
-  const [activeTripId, setActiveTripId] = useState<string | null>(null);
   const [lastLocationText, setLastLocationText] = useState("Waiting for GPS");
 
   const locationSubscriptionRef = useRef<Location.LocationSubscription | null>(null);
@@ -35,13 +32,14 @@ export function useLocationSharing({ user }: UseLocationSharingProps) {
     locationSubscriptionRef.current?.remove();
     locationSubscriptionRef.current = null;
     setIsSharingLocation(false);
-    setActiveTripId(null);
     setLastLocationText("Location sharing stopped");
     socket.disconnect();
   };
 
   const startForegroundLocationSharing = async (routeId: string | null, selectedBus: any) => {
-    if (!user?._id || !routeId || !selectedBus) {
+    const userId = user?.userId || user?._id;
+
+    if (!userId || !routeId || !selectedBus) {
       ToastUtil.error("Select route and bus first.");
       return;
     }
@@ -52,19 +50,6 @@ export function useLocationSharing({ user }: UseLocationSharingProps) {
     }
 
     try {
-      const trip = await createTrip({
-        routeId,
-        hostId: user._id,
-        busName: selectedBus.name,
-        busType: selectedBus.busType || BUS_TYPES.STUDENT,
-      }).unwrap();
-
-      const tripId = trip?.data?._id ?? trip?._id;
-
-      if (!tripId) {
-        throw new Error("Trip ID missing from response.");
-      }
-
       if (!socket.connected) {
         socket.connect();
       }
@@ -78,12 +63,13 @@ export function useLocationSharing({ user }: UseLocationSharingProps) {
       locationSubscriptionRef.current = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.BestForNavigation,
-          timeInterval: 5000,
-          distanceInterval: 5,
+          timeInterval: 2000,
+          distanceInterval: 2,
         },
         (location) => {
           const payload = {
-            tripId,
+            routeId,
+            busId: selectedBus._id,
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
             speed: location.coords.speed,
@@ -92,22 +78,24 @@ export function useLocationSharing({ user }: UseLocationSharingProps) {
           };
 
           if (!socket.connected) {
+            console.log("SOCKET NOT CONNECTED, CONNECTING...");
             socket.connect();
           }
 
           socket.emit(SOCKET_EVENTS.BROADCAST_BUS_LOCATION, payload);
+
+          console.log("LOCATION BROADCASTED:", payload);
           if (mountedRef.current) {
             setLastLocationText(`${location.coords.latitude.toFixed(5)}, ${location.coords.longitude.toFixed(5)}`);
           }
         }
       );
 
-      setActiveTripId(tripId);
       setIsSharingLocation(true);
       setLastLocationText("Location sharing active");
       ToastUtil.success("Foreground location sharing started.");
     } catch (error: any) {
-      ToastUtil.error(error?.response?.data?.message || error?.data?.message || "Failed to start sharing.");
+      ToastUtil.error(error?.message || "Failed to start sharing.");
     }
   };
 
@@ -128,9 +116,8 @@ export function useLocationSharing({ user }: UseLocationSharingProps) {
 
   return {
     isSharingLocation,
-    activeTripId,
     lastLocationText,
-    isStartingTrip,
+    isStartingTrip: false, // Compatibility legacy check
     stopForegroundLocationSharing,
     startForegroundLocationSharing,
     handleLocationToggle,
