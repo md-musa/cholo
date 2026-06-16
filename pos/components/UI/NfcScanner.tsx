@@ -11,13 +11,7 @@ interface NfcScannerProps {
   onReset: () => void;
 }
 
-export default function NfcScanner({
-  scanState,
-  scanError,
-  lastTransaction,
-  onScanCard,
-  onReset,
-}: NfcScannerProps) {
+export default function NfcScanner({ scanState, scanError, lastTransaction, onScanCard, onReset }: NfcScannerProps) {
   return (
     <View style={styles.fullScreenNfcArea}>
       {scanState === "idle" && (
@@ -27,7 +21,7 @@ export default function NfcScanner({
           </View>
           <Text style={styles.stateTitle}>Ready to Collect Fare</Text>
           <Text style={styles.stateSubtitle}>Tap passenger NFC smart card to complete checkout.</Text>
-          
+
           <TouchableOpacity onPress={onScanCard} style={[styles.giantScanBtn, styles.giantScanBtnIdle]}>
             <Text style={styles.giantScanBtnText}>Tap Card Now</Text>
           </TouchableOpacity>
@@ -58,7 +52,7 @@ export default function NfcScanner({
         <View style={[styles.fullScreenStatusCard, styles.successBackground]}>
           <Ionicons name="checkmark-circle" size={120} color="white" />
           <Text style={styles.fullScreenStatusTitle}>Payment Successful</Text>
-          
+
           <View style={styles.successDetailsCard}>
             <Text style={styles.detailLabel}>Passenger</Text>
             <Text style={styles.detailValBig}>{lastTransaction?.data?.userName || "Anonymous Passenger"}</Text>
@@ -75,7 +69,9 @@ export default function NfcScanner({
               <View style={styles.detailCol}>
                 <Text style={styles.detailLabel}>Remaining Balance</Text>
                 <Text style={styles.detailValBold}>
-                  {typeof lastTransaction?.data?.balance === "number" ? `${lastTransaction.data.balance} BDT` : "-- BDT"}
+                  {typeof lastTransaction?.data?.balance === "number"
+                    ? `${lastTransaction.data.balance} BDT`
+                    : "-- BDT"}
                 </Text>
               </View>
             </View>
@@ -99,7 +95,7 @@ export default function NfcScanner({
         <View style={[styles.fullScreenStatusCard, styles.errorBackground]}>
           <Ionicons name="alert-circle" size={120} color="white" />
           <Text style={styles.fullScreenStatusTitle}>Transaction Failed</Text>
-          
+
           <View style={styles.errorDetailsCard}>
             <Text style={styles.errorTextLabel}>Error Details</Text>
             <Text style={styles.errorTextValue}>{scanError || "An unexpected network error occurred."}</Text>
@@ -108,7 +104,7 @@ export default function NfcScanner({
           <TouchableOpacity onPress={onScanCard} style={styles.retryBtn}>
             <Text style={styles.retryBtnText}>Try Again</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity onPress={onReset} style={styles.cancelErrorBtn}>
             <Text style={styles.cancelErrorBtnText}>Back</Text>
           </TouchableOpacity>

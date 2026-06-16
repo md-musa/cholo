@@ -1,4 +1,7 @@
 import * as turf from "@turf/turf";
+import { RouteModel } from "../route/route.model";
+import ApiError from "../../../errors/ApiError";
+
 
 export function calculateDistance(checkinCoords: number[], checkoutCoords: number[], routeLine): number {
   const checkinPoint = turf.point(checkinCoords);
@@ -45,4 +48,23 @@ export function findNearestStop(userCoords, routeLine, stopages) {
   });
 
   return nearest;
+}
+
+
+export async function detectNearestStoppage(
+  coords: { lat: number; lng: number },
+  routeId: string
+): Promise<string> {
+  const route = await RouteModel.findById(routeId).lean();
+  if (!route) {
+    throw ApiError.notFound("Route not found");
+  }
+
+  const coordsArr = [coords.lng, coords.lat];
+  const nearest = findNearestStop(coordsArr, route.routeLine, route.stopages);
+  if (!nearest) {
+    throw ApiError.notFound("Nearest stoppage could not be detected on route");
+  }
+
+  return nearest.name;
 }

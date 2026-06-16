@@ -5,7 +5,6 @@ const PassengerRegisterSchema = z.object({
   phoneNumber: z.string().nonempty("Phone number is required"),
   pin: z.string().length(6, "PIN must be 6 digits").nonempty("PIN is required"),
   role: z.literal("passenger"),
-  nfcUid: z.string().optional(),
   route: z.string().optional(),
   balance: z.number().default(0),
   discount: z.number().optional(),

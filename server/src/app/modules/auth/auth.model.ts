@@ -13,8 +13,6 @@ const PassengerSchema = new Schema<IPassenger>(
     phoneNumber: { type: String, unique: true, required: true },
     pin: { type: String, required: true },
     role: { type: String, required: true, enum: [USER_ROLES.PASSENGER], default: USER_ROLES.PASSENGER },
-    nfcUid: { type: String, unique: true, default: null },
-    balance: { type: Number, default: 0 },
     discount: { type: Number, default: 0 },
     discount_validity: { type: Date, default: null },
     isBlocked: { type: Boolean, default: false },

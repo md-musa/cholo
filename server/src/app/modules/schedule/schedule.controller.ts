@@ -1,4 +1,4 @@
-import { TripModel } from "./../trip/trip.model";
+import { TripModel } from "../liveLocation/trip.model";
 import { Request, Response } from "express";
 import { format, parse } from "date-fns";
 import { StatusCodes } from "http-status-codes";
@@ -25,8 +25,8 @@ const createSchedule = async (req: Request, res: Response) => {
 };
 
 const getAllSchedules = async (req: Request, res: Response) => {
-  
-  
+
+
   const result = await ScheduleService.getAllSchedules(req.query);
 
   sendResponse(res, {

@@ -1,17 +1,21 @@
 import express from "express";
 import validateRequest from "../../middlewares/validateRequest";
-import { TripController } from "./trip.controller";
 import { TripValidation } from "./trip.validation";
-import auth from "../../middlewares/auth";
-// import { USER_ROLES } from "../../../constants";
+import { TripController } from "./trip.controller";
 
 const router = express.Router();
 
-// router.post(
-//   "/",
-//   validateRequest(TripValidation.create),
-//   auth(USER_ROLES.STUDENT, USER_ROLES.EMPLOYEE),
-//   TripController.create
-// );
+// NFC Tap Check-in / Check-out
+router.post("/tap", validateRequest(TripValidation.tap), TripController.tapCard);
 
-export const TripRouter = router;
+// Get active trip details for a card
+router.get("/active/:nfcUid", TripController.getActiveTrip);
+
+// Get passenger completed trip history
+router.get("/history/:userId", TripController.getTripHistory);
+
+// Dashboard and payment stats history
+router.get("/dashboard-start", TripController.getDashboardStats);
+router.get("/payment-history", TripController.getPaymentHistory);
+
+export const TripRoute = router;

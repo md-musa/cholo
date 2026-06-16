@@ -1,33 +1,47 @@
-import mongoose, { Schema, Document } from 'mongoose';
-
-interface FareMatrixType {
-  [startStopage: string]: {
-    [endStopage: string]: number;
-  };
-}
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IFareMatrix extends Document {
   routeId: mongoose.Types.ObjectId;
-  fareMatrix: FareMatrixType;
+  from: string;
+  to: string;
+  fare: number;
+  updatedBy?: mongoose.Types.ObjectId;
 }
 
-const FareMatrixSchema: Schema = new Schema({
-  routeId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Route',
-    required: true,
-    unique: true, 
-  },
-  fareMatrix: {
-    type: Map,
-    of: {
-      type: Map,
-      of: Number,
+const FareMatrixSchema: Schema = new Schema(
+  {
+    routeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Route",
+      required: true,
     },
-    required: true,
+    from: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    to: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    fare: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin", // Reference to the admin who updated the fare matrix
+      default: null,
+    },
   },
-});
+  {
+    timestamps: true,
+  }
+);
 
-export const FareMatrix = mongoose.model<IFareMatrix>('FareMatrix', FareMatrixSchema);
+// Compound unique index on { routeId, from, to }
+FareMatrixSchema.index({ routeId: 1, from: 1, to: 1 }, { unique: true });
 
-
+export const FareMatrix = mongoose.model<IFareMatrix>("FareMatrix", FareMatrixSchema);

@@ -2,7 +2,7 @@ import { SOCKET_EVENTS } from "../../constants";
 import ApiError from "../../errors/ApiError";
 import { io } from "../../server";
 import { BusModel } from "../modules/bus/bus.model";
-import { TripModel } from "../modules/trip/trip.model";
+import { TripModel } from "../modules/liveLocation/trip.model";
 
 export const broadcastLocation = async (data: any) => {
   const { tripId, latitude, longitude, heading, speed } = data;

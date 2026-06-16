@@ -26,7 +26,7 @@ import { ScanState, PaymentResponse } from "./types";
 
 export default function PosHomeScreen() {
   const dispatch = useAppDispatch();
-  
+
   // Auth state & Queries
   const { user, route: assignedRoute } = useAppSelector((state) => state.auth);
   const { data: routes = [], isLoading: isRoutesLoading } = useGetRoutesQuery();
@@ -52,12 +52,9 @@ export default function PosHomeScreen() {
 
   const selectedRoute = useMemo(
     () => routes.find((item: any) => item._id === routeId) ?? assignedRoute ?? null,
-    [assignedRoute, routeId, routes]
+    [assignedRoute, routeId, routes],
   );
-  const selectedBus = useMemo(
-    () => buses.find((item: any) => item._id === busId) ?? null,
-    [busId, buses]
-  );
+  const selectedBus = useMemo(() => buses.find((item: any) => item._id === busId) ?? null, [busId, buses]);
 
   // Initialization: Load route and bus from storage
   useEffect(() => {
@@ -128,12 +125,13 @@ export default function PosHomeScreen() {
     setScanState("scanning");
 
     try {
-      await NfcManager.requestTechnology(NfcTech.Ndef, {
-        alertMessage: "Tap passenger card to the phone",
-      });
+      // await NfcManager.requestTechnology(NfcTech.Ndef, {
+      //   alertMessage: "Tap passenger card to the phone",
+      // });
 
-      const tag = await NfcManager.getTag();
-      const uid = tag?.id;
+      // const tag = await NfcManager.getTag();
+      // const uid = tag?.id;
+      const uid = "04357972217680";
 
       if (!uid) {
         throw new Error("Unable to read card UID.");
@@ -145,14 +143,11 @@ export default function PosHomeScreen() {
         accuracy: Location.Accuracy.Balanced,
       });
 
-      const response = await apiClient.post("/payments/create-payment", {
+      const response = await apiClient.post("/trip/tap", {
         nfcUid: uid,
         routeId,
         busId: selectedBus._id,
-        tripId: activeTripId,
-        operatorId: user?._id,
-        timestamp: new Date().toISOString(),
-        coords: [currentLocation.coords.longitude, currentLocation.coords.latitude],
+        coords: { lat: currentLocation.coords.longitude, lng: currentLocation.coords.latitude },
       });
 
       setLastTransaction(response);
@@ -160,6 +155,7 @@ export default function PosHomeScreen() {
       playSound("success").catch(() => undefined);
       ToastUtil.success("Tap processed successfully.");
     } catch (error: any) {
+      console.log(JSON.stringify(error));
       const message =
         error?.response?.data?.errorMessages?.[0]?.message ||
         error?.response?.data?.message ||
@@ -171,18 +167,14 @@ export default function PosHomeScreen() {
       playSound("error").catch(() => undefined);
       ToastUtil.error(message);
     } finally {
-      NfcManager.cancelTechnologyRequest().catch(() => undefined);
+      //NfcManager.cancelTechnologyRequest().catch(() => undefined);
     }
   };
 
   // Handle Logout
   const handleLogout = async () => {
     stopForegroundLocationSharing();
-    await AsyncStorage.multiRemove([
-      ASYNC_STORAGE_KEYS.AUTH_TOKEN,
-      ASYNC_STORAGE_KEYS.CURRENT_ROUTE,
-      "current_bus",
-    ]);
+    await AsyncStorage.multiRemove([ASYNC_STORAGE_KEYS.AUTH_TOKEN, ASYNC_STORAGE_KEYS.CURRENT_ROUTE, "current_bus"]);
     dispatch(clearCredentials());
     router.replace("/login");
   };
