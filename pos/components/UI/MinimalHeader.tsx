@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 interface MinimalHeaderProps {
-  onMenuPress: () => void;
   routeName?: string;
   routeNo?: string;
   busName?: string;
@@ -11,7 +10,6 @@ interface MinimalHeaderProps {
 }
 
 export default function MinimalHeader({
-  onMenuPress,
   routeName,
   routeNo,
   busName,
@@ -19,10 +17,6 @@ export default function MinimalHeader({
 }: MinimalHeaderProps) {
   return (
     <View style={styles.minimalHeader}>
-      <TouchableOpacity onPress={onMenuPress} style={styles.menuButton}>
-        <Ionicons name="menu-outline" size={28} color="white" />
-      </TouchableOpacity>
-
       <View style={styles.minimalInfo}>
         <Text style={styles.minimalRouteText}>
           {routeNo ? `Route ${routeNo}` : routeName || "Route"}
@@ -58,14 +52,9 @@ const styles = StyleSheet.create({
     borderBottomColor: "#1e293b",
     backgroundColor: "#020617",
   },
-  menuButton: {
-    padding: 6,
-    borderRadius: 12,
-    backgroundColor: "#1e293b",
-  },
   minimalInfo: {
     flex: 1,
-    marginLeft: 16,
+    marginLeft: 0,
   },
   minimalRouteText: {
     fontSize: 16,

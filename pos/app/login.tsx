@@ -41,6 +41,7 @@ export default function Login() {
         setCredentials({
           user,
           route: null,
+          bus: null,
           accessToken,
         }),
       );

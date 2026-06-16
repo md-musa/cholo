@@ -27,6 +27,8 @@ export default function Index() {
         const token = await AsyncStorage.getItem(ASYNC_STORAGE_KEYS.AUTH_TOKEN);
         const storedRoute = await AsyncStorage.getItem(ASYNC_STORAGE_KEYS.CURRENT_ROUTE);
         const route = storedRoute ? JSON.parse(storedRoute) : null;
+        const storedBus = await AsyncStorage.getItem("current_bus");
+        const bus = storedBus ? JSON.parse(storedBus) : null;
 
         if (!token) {
           dispatch(clearCredentials());
@@ -38,7 +40,7 @@ export default function Index() {
         const isExpired = decoded.exp ? decoded.exp * 1000 <= Date.now() : false;
 
         if (isExpired) {
-          await AsyncStorage.multiRemove([ASYNC_STORAGE_KEYS.AUTH_TOKEN, ASYNC_STORAGE_KEYS.CURRENT_ROUTE]);
+          await AsyncStorage.multiRemove([ASYNC_STORAGE_KEYS.AUTH_TOKEN, ASYNC_STORAGE_KEYS.CURRENT_ROUTE, "current_bus"]);
           dispatch(clearCredentials());
           router.replace("/login");
           return;
@@ -55,6 +57,7 @@ export default function Index() {
           setCredentials({
             user,
             route,
+            bus,
             accessToken: token,
           })
         );

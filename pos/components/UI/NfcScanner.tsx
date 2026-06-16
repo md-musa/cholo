@@ -48,48 +48,91 @@ export default function NfcScanner({ scanState, scanError, lastTransaction, onSc
         </View>
       )}
 
-      {scanState === "success" && (
-        <View style={[styles.fullScreenStatusCard, styles.successBackground]}>
-          <Ionicons name="checkmark-circle" size={120} color="white" />
-          <Text style={styles.fullScreenStatusTitle}>Payment Successful</Text>
+      {scanState === "success" && (() => {
+        const isCheckIn = lastTransaction?.message === "Check-in successful";
+        return (
+          <View style={[styles.fullScreenStatusCard, styles.successBackground]}>
+            <Ionicons name="checkmark-circle" size={120} color="white" />
+            <Text style={styles.fullScreenStatusTitle}>
+              {isCheckIn ? "Check-In Successful" : "Check-Out Successful"}
+            </Text>
 
-          <View style={styles.successDetailsCard}>
-            <Text style={styles.detailLabel}>Passenger</Text>
-            <Text style={styles.detailValBig}>{lastTransaction?.data?.userName || "Anonymous Passenger"}</Text>
+            <View style={styles.successDetailsCard}>
+              {isCheckIn ? (
+                <View>
+                  <Text style={styles.detailLabel}>Boarded From</Text>
+                  <Text style={styles.detailValBig}>
+                    {lastTransaction?.data?.startStoppage || "Active Stoppage"}
+                  </Text>
 
-            <View style={styles.detailDivider} />
+                  <View style={styles.detailDivider} />
 
-            <View style={styles.detailRow}>
-              <View style={styles.detailCol}>
-                <Text style={styles.detailLabel}>Fare Deducted</Text>
-                <Text style={styles.detailValBold}>
-                  {typeof lastTransaction?.data?.fare === "number" ? `${lastTransaction.data.fare} BDT` : "-- BDT"}
-                </Text>
-              </View>
-              <View style={styles.detailCol}>
-                <Text style={styles.detailLabel}>Remaining Balance</Text>
-                <Text style={styles.detailValBold}>
-                  {typeof lastTransaction?.data?.balance === "number"
-                    ? `${lastTransaction.data.balance} BDT`
-                    : "-- BDT"}
-                </Text>
-              </View>
+                  <View style={styles.detailRow}>
+                    <View style={styles.detailCol}>
+                      <Text style={styles.detailLabel}>Current Balance</Text>
+                      <Text style={styles.detailValBold}>
+                        {typeof lastTransaction?.data?.balance === "number"
+                          ? `${lastTransaction.data.balance} BDT`
+                          : "-- BDT"}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.detailDivider} />
+
+                  <View style={styles.hintContainer}>
+                    <Ionicons name="information-circle-outline" size={18} color="#cbd5e1" style={styles.hintIcon} />
+                    <Text style={styles.hintText}>
+                      Please tap your card again when exiting the bus to checkout and complete your fare payment.
+                    </Text>
+                  </View>
+                </View>
+              ) : (
+                <View>
+                  <Text style={styles.detailLabel}>Trip Segment</Text>
+                  <Text style={styles.detailValBig}>
+                    {lastTransaction?.data?.startStoppage || "Origin"} → {lastTransaction?.data?.endStoppage || "Destination"}
+                  </Text>
+
+                  <View style={styles.detailDivider} />
+
+                  <View style={styles.detailRow}>
+                    <View style={styles.detailCol}>
+                      <Text style={styles.detailLabel}>Fare Deducted</Text>
+                      <Text style={styles.detailValBold}>
+                        {typeof lastTransaction?.data?.fareDeducted === "number"
+                          ? `${lastTransaction.data.fareDeducted} BDT`
+                          : "-- BDT"}
+                      </Text>
+                    </View>
+                    <View style={styles.detailCol}>
+                      <Text style={styles.detailLabel}>Remaining Balance</Text>
+                      <Text style={styles.detailValBold}>
+                        {typeof lastTransaction?.data?.remainingBalance === "number"
+                          ? `${lastTransaction.data.remainingBalance} BDT`
+                          : "-- BDT"}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.detailDivider} />
+
+                  <Text style={styles.detailLabel}>Distance Traveled</Text>
+                  <Text style={styles.detailValSmall}>
+                    {typeof lastTransaction?.data?.distanceInKm === "number"
+                      ? `${lastTransaction.data.distanceInKm.toFixed(2)} km`
+                      : "-- km"}
+                  </Text>
+                </View>
+              )}
             </View>
 
-            <View style={styles.detailDivider} />
-
-            <Text style={styles.detailLabel}>Trip Segment</Text>
-            <Text style={styles.detailValSmall}>
-              {lastTransaction?.data?.startStopage || "Origin"}
-              {lastTransaction?.data?.endStopage ? ` → ${lastTransaction.data.endStopage}` : " (Check-In Only)"}
-            </Text>
+            <TouchableOpacity onPress={onReset} style={styles.nextPassengerBtn}>
+              <Text style={styles.nextPassengerBtnText}>Next Passenger</Text>
+            </TouchableOpacity>
           </View>
-
-          <TouchableOpacity onPress={onReset} style={styles.nextPassengerBtn}>
-            <Text style={styles.nextPassengerBtnText}>Next Passenger</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+        );
+      })()}
 
       {scanState === "error" && (
         <View style={[styles.fullScreenStatusCard, styles.errorBackground]}>
@@ -309,5 +352,22 @@ const styles = StyleSheet.create({
     color: "#f8fafc",
     fontSize: 14,
     fontWeight: "600",
+  },
+  hintContainer: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    padding: 12,
+    borderRadius: 12,
+  },
+  hintIcon: {
+    marginTop: 2,
+    marginRight: 8,
+  },
+  hintText: {
+    color: "#cbd5e1",
+    fontSize: 12,
+    lineHeight: 18,
+    flex: 1,
   },
 });
