@@ -6,6 +6,7 @@ import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 import routeNotFoundError from "./app/middlewares/routeNotFoundError";
 import { AuthRouter } from "./app/modules/auth/auth.route";
 import { BusRouter } from "./app/modules/bus/bus.route";
+import { UserRouter } from "./app/modules/user/user.route";
 import { RouteRouter } from "./app/modules/route/route.route";
 import { TripRouter } from "./app/modules/trip/trip.route";
 import { logger } from "./shared/logger";
@@ -39,6 +40,7 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/api/v1/payments", PaymentRoute);
 app.use("/api/v1/auth", AuthRouter);
+app.use("/api/v1/users", UserRouter);
 app.use("/api/v1/buses", BusRouter);
 app.use("/api/v1/routes", RouteRouter);
 // app.use("/api/v1/trips", TripRouter);

@@ -7,14 +7,14 @@ import { RouteModel } from "../route/route.model";
 import { calculateDistance, findNearestStop } from "./payment.util";
 import { TransactionModel } from "./payment.model";
 import { FareMatrix } from "../fareMatrix/fareMatrix.model";
-import { CustomerModel, UserModel } from "../auth/auth.model";
+import { PassengerModel } from "../auth/auth.model";
 import { get } from "http";
 
 const createPayment = async (req: Request, res: Response): Promise<void> => {
   const data: IPaymentData = req.body;
 
   // Validate NFC UID
-  const user = await CustomerModel.findOne({ nfcUid: data.nfcUid });
+  const user = await PassengerModel.findOne({ nfcUid: data.nfcUid });
   if (!user) throw ApiError.badRequest("Invalid Card");
 
   // Validate route
@@ -157,7 +157,7 @@ const getDashboardStats = async (req: Request, res: Response): Promise<void> => 
     TransactionModel.countDocuments({ paymentStatus: "success" }),
 
     // Total users count
-    CustomerModel.countDocuments(),
+    PassengerModel.countDocuments(),
 
     // Last 10 transactions
     TransactionModel.find().sort({ createdAt: -1 }).limit(10),

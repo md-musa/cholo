@@ -16,19 +16,23 @@ import { ToastUtil } from "@/utils/toastUtil";
 export default function Login() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [pin, setPin] = useState("");
+  const [showPin, setShowPin] = useState(false);
   const [login, { isLoading }] = useLoginMutation();
 
   const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      ToastUtil.error("Enter your email and password.");
+    if (!phoneNumber.trim() || !pin.trim()) {
+      ToastUtil.error("Enter your phone number and PIN.");
       return;
     }
 
     try {
-      const result = await login({ email: email.trim(), password }).unwrap();
+      const result = await login({
+        phoneNumber: phoneNumber.trim(),
+        pin: pin.trim(),
+        role: "pos_device",
+      }).unwrap();
       const { accessToken, user } = (result as any).data || result;
 
       await AsyncStorage.setItem(ASYNC_STORAGE_KEYS.AUTH_TOKEN, accessToken);
@@ -65,15 +69,15 @@ export default function Login() {
 
         <View style={styles.card}>
           <View style={styles.fieldBlock}>
-            <Text style={styles.label}>Email</Text>
+            <Text style={styles.label}>Phone Number</Text>
             <View style={styles.inputRow}>
-              <MaterialCommunityIcons name="email-outline" size={20} color={colors.muted[500]} />
+              <MaterialCommunityIcons name="phone-outline" size={20} color={colors.muted[500]} />
               <TextInput
-                value={email}
-                onChangeText={setEmail}
+                value={phoneNumber}
+                onChangeText={setPhoneNumber}
                 autoCapitalize="none"
-                keyboardType="email-address"
-                placeholder="operator@company.com"
+                keyboardType="phone-pad"
+                placeholder="017XXXXXXXX"
                 style={styles.input}
                 editable={!isLoading}
               />
@@ -81,19 +85,20 @@ export default function Login() {
           </View>
 
           <View>
-            <Text style={styles.label}>Password</Text>
+            <Text style={styles.label}>PIN Number</Text>
             <View style={styles.inputRow}>
               <MaterialIcons name="lock-outline" size={20} color={colors.muted[500]} />
               <TextInput
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-                placeholder="Enter password"
+                value={pin}
+                onChangeText={setPin}
+                secureTextEntry={!showPin}
+                keyboardType="number-pad"
+                placeholder="Enter PIN"
                 style={styles.input}
                 editable={!isLoading}
               />
-              <TouchableOpacity onPress={() => setShowPassword((value) => !value)} disabled={isLoading}>
-                <Ionicons name={showPassword ? "eye-off" : "eye"} size={20} color={colors.muted[500]} />
+              <TouchableOpacity onPress={() => setShowPin((value) => !value)} disabled={isLoading}>
+                <Ionicons name={showPin ? "eye-off" : "eye"} size={20} color={colors.muted[500]} />
               </TouchableOpacity>
             </View>
           </View>
