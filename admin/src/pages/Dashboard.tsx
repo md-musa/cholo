@@ -79,7 +79,7 @@ export function Dashboard() {
       const d = new Date()
       d.setDate(today.getDate() - i)
       const dateStr = d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-      
+
       // For i=0 (today), use actual today's income. For others, create a realistic mock baseline.
       let amount = 0
       if (i === 0) {
@@ -140,14 +140,11 @@ export function Dashboard() {
 
   const chartData = getChartData()
   const last8Transactions = data?.lastTransactions?.slice(0, 8) || []
-
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50">Dashboard</h1>
-          <p className="text-neutral-500 dark:text-neutral-400">Live operational overview for the transport system.</p>
         </div>
         <button
           onClick={fetchDashboardData}
@@ -157,7 +154,6 @@ export function Dashboard() {
         </button>
       </div>
 
-      {/* 4 Stat Cards Row */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {/* Total Revenue */}
         <Card className="border border-neutral-200 dark:border-neutral-800 shadow-sm bg-white dark:bg-neutral-900">
@@ -170,10 +166,6 @@ export function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
               ৳{data?.todaysIncome.toLocaleString()}
-            </div>
-            <div className="flex items-center gap-1 mt-1 text-xs text-emerald-600 dark:text-emerald-400">
-              <TrendingUp className="h-3 w-3" />
-              <span>+12.4% from yesterday</span>
             </div>
           </CardContent>
         </Card>
@@ -190,10 +182,6 @@ export function Dashboard() {
             <div className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
               {data?.todaysTransactions}
             </div>
-            <div className="flex items-center gap-1 mt-1 text-xs text-emerald-600 dark:text-emerald-400">
-              <TrendingUp className="h-3 w-3" />
-              <span>+8.2% from yesterday</span>
-            </div>
           </CardContent>
         </Card>
 
@@ -208,9 +196,6 @@ export function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
               {data?.totalBuses}
-            </div>
-            <div className="flex items-center gap-1 mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-              <span>All fleets verified online</span>
             </div>
           </CardContent>
         </Card>
@@ -227,21 +212,17 @@ export function Dashboard() {
             <div className="text-2xl font-bold text-neutral-900 dark:text-neutral-50">
               {data?.totalUsers}
             </div>
-            <div className="flex items-center gap-1 mt-1 text-xs text-emerald-600 dark:text-emerald-400">
-              <TrendingUp className="h-3 w-3" />
-              <span>+18.5% new user signups</span>
-            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Recharts Revenue Chart & Recent Transactions Section */}
+      {/* ---------------------Recharts Revenue Chart & Recent Transactions Section--------------------- */}
       <div className="grid gap-6 md:grid-cols-7">
-        {/* Revenue Line Chart */}
+        {/* -----------------------------------Revenue Line Chart----------------------------------- */}
         <Card className="md:col-span-4 border border-neutral-200 dark:border-neutral-800 shadow-sm bg-white dark:bg-neutral-900">
           <CardHeader>
             <CardTitle>Revenue Analytics</CardTitle>
-            <CardDescription>Line chart showing ticket fare revenue over the last 7 days.</CardDescription>
+            <CardDescription>The chart shows the revenue of the last 7 days.</CardDescription>
           </CardHeader>
           <CardContent className="h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -265,7 +246,7 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Recent Transactions Table */}
+        {/* --------------------Recent Transactions Table-------------------- */}
         <Card className="md:col-span-3 border border-neutral-200 dark:border-neutral-800 shadow-sm bg-white dark:bg-neutral-900 overflow-hidden flex flex-col">
           <CardHeader className="flex flex-row items-center justify-between pb-2 shrink-0">
             <div>
@@ -285,15 +266,15 @@ export function Dashboard() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-neutral-50 dark:bg-neutral-900/50 hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
-                    <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300">Card ID</TableHead>
-                    <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300">Route</TableHead>
-                    <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300 text-right">Fare</TableHead>
+                    <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300">Passenger</TableHead>
+                    <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300">Route Name</TableHead>
+                    <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300 text-center">Distance</TableHead>
+                    <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300 text-center">Fare</TableHead>
                     <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300 text-center">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {last8Transactions.map((tx: any) => {
-                    // status badge colors: deducted=green, failed=red, pending=yellow
                     let badgeStyles = "bg-yellow-50 text-yellow-800 border-yellow-200 dark:bg-yellow-950/30 dark:text-yellow-400 dark:border-yellow-900/50"
                     if (tx.fareStatus === "deducted") {
                       badgeStyles = "bg-green-50 text-green-800 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-900/50"
@@ -301,21 +282,22 @@ export function Dashboard() {
                       badgeStyles = "bg-red-50 text-red-800 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50"
                     }
 
-                    const cardDisplay = tx.userId?.nfcUid || (tx.cardId ? tx.cardId.slice(-6) : "N/A")
-
                     return (
                       <TableRow key={tx._id} className="hover:bg-neutral-50/50 dark:hover:bg-neutral-800/20">
                         <TableCell className="font-mono text-xs text-neutral-600 dark:text-neutral-300">
-                          {cardDisplay}
+                          {tx.userId?.name || "N/A"}
                         </TableCell>
                         <TableCell className="text-xs max-w-[100px] truncate text-neutral-600 dark:text-neutral-300" title={tx.routeId?.routeName}>
-                          {tx.routeId?.routeNo || "N/A"}
+                          {tx.routeId?.routeName || "N/A"}
                         </TableCell>
-                        <TableCell className="text-xs text-right text-neutral-600 dark:text-neutral-300">
+                        <TableCell className="text-xs text-center text-neutral-600 dark:text-neutral-300">
+                          {tx.distanceInKm.toFixed(2) + ' km' || "—"}
+                        </TableCell>
+                        <TableCell className="text-xs text-center text-neutral-600 dark:text-neutral-300">
                           {tx.fare !== null ? `৳${tx.fare}` : "—"}
                         </TableCell>
                         <TableCell className="text-center py-2">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${badgeStyles}`}>
+                          <span className={`inline-flex capitalize items-center px-2 py-0.5 rounded-full text-xs font-medium border ${badgeStyles}`}>
                             {tx.fareStatus || "pending"}
                           </span>
                         </TableCell>

@@ -227,7 +227,7 @@ export function Cards() {
     setSelectedCardDetail(card)
     setIsDetailOpen(true)
     setRecentTrips([])
-    
+
     if (card.userId?._id) {
       setTripsLoading(true)
       try {
@@ -565,9 +565,8 @@ export function Cards() {
                   filteredPassengers.map((p) => (
                     <label
                       key={p._id}
-                      className={`flex items-center justify-between p-2 hover:bg-neutral-100/50 dark:hover:bg-neutral-850/50 cursor-pointer ${
-                        selectedPassengerId === p._id ? "bg-neutral-100 dark:bg-neutral-800" : ""
-                      }`}
+                      className={`flex items-center justify-between p-2 hover:bg-neutral-100/50 dark:hover:bg-neutral-850/50 cursor-pointer ${selectedPassengerId === p._id ? "bg-neutral-100 dark:bg-neutral-800" : ""
+                        }`}
                     >
                       <div className="flex flex-col">
                         <span className="text-sm font-medium text-neutral-900 dark:text-neutral-50">{p.name}</span>
@@ -621,13 +620,12 @@ export function Cards() {
 
       {/* Sheet: Card Detail */}
       <Sheet open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <SheetContent className="w-full sm:max-w-md bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800">
+        <SheetContent className="w-full px-4 sm:max-w-md bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800">
           <SheetHeader>
             <SheetTitle>Card Details</SheetTitle>
-            <SheetDescription>Comprehensive status and history of the NFC transit token.</SheetDescription>
           </SheetHeader>
           {selectedCardDetail && (
-            <div className="space-y-6 py-6">
+            <div className="space-y-6">
               {/* Card Meta details */}
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-neutral-450 dark:text-neutral-400 uppercase tracking-wider">System Information</h3>
@@ -700,27 +698,27 @@ export function Cards() {
                       <Table>
                         <TableHeader>
                           <TableRow className="bg-neutral-50 dark:bg-neutral-900/50">
-                            <TableHead className="font-semibold">Stops</TableHead>
-                            <TableHead className="text-right font-semibold">Fare</TableHead>
-                            <TableHead className="text-right font-semibold">Date</TableHead>
+                            <TableHead className="text-center font-semibold">Date</TableHead>
+                            <TableHead className="text-center font-semibold">Route</TableHead>
+                            <TableHead className="text-center font-semibold">Fare</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {recentTrips.map((trip) => (
                             <TableRow key={trip._id}>
+                              <TableCell className="text-center py-2.5 text-neutral-550 dark:text-neutral-450">
+                                {trip.checkoutTime ? new Date(trip.checkoutTime).toLocaleDateString() : 'null'}
+                              </TableCell>
+
                               <TableCell className="py-2.5">
                                 <div className="font-semibold text-neutral-800 dark:text-neutral-200">
-                                  {trip.startStoppage} → {trip.endStoppage || "Active"}
+                                  {trip.routeId?.routeName || '-'}
                                 </div>
-                                <div className="text-[10px] text-neutral-500 font-mono">
-                                  {trip.routeId?.routeNo || "Route No"}
-                                </div>
+
                               </TableCell>
-                              <TableCell className="text-right py-2.5 font-medium">
+
+                              <TableCell className="text-center py-2.5 font-medium">
                                 {trip.fareStatus === "deducted" ? `৳${trip.fare}` : <span className="text-red-500 font-normal capitalize">{trip.fareStatus}</span>}
-                              </TableCell>
-                              <TableCell className="text-right py-2.5 text-neutral-550 dark:text-neutral-450">
-                                {trip.checkoutTime ? new Date(trip.checkoutTime).toLocaleDateString() : new Date(trip.checkinTime).toLocaleDateString()}
                               </TableCell>
                             </TableRow>
                           ))}

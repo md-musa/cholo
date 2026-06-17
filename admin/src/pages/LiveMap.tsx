@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { io, type Socket } from "socket.io-client"
 import { useGetRoutesQuery, useGetBusesQuery, type Route, type Bus } from "@/store/apiSlice"
 import {
   Map,
   MapControls,
   MapMarker,
-  MapRoute,
+  useMap,
   MarkerContent,
   MarkerPopup,
   MarkerLabel,
@@ -27,6 +27,77 @@ const ROUTE_COLORS = [
   "#2563EB", "#16A34A", "#DC2626", "#9333EA",
   "#EA580C", "#0891B2", "#CA8A04", "#BE185D",
 ]
+
+// ─── RouteLines — draws route polylines directly via MapLibre API ─────────────
+// Uses useMap() inside the <Map> tree to avoid MapRoute's two-effect race
+function RouteLines({
+  routes,
+  colorMap,
+}: {
+  routes: Route[]
+  colorMap: Record<string, string>
+}) {
+  const { map, isLoaded } = useMap()
+
+  useEffect(() => {
+    if (!map || !isLoaded) return
+
+    const addedSources: string[] = []
+    const addedLayers: string[] = []
+
+    routes.forEach((route) => {
+      const coords: [number, number][] = (route.routeLine ?? []).map(
+        (pt: any): [number, number] =>
+          Array.isArray(pt) ? [pt[0], pt[1]] : [pt.lng ?? pt.longitude, pt.lat ?? pt.latitude]
+      )
+      if (coords.length < 2) return
+
+      const sourceId = `rl-src-${route._id}`
+      const layerId  = `rl-lay-${route._id}`
+
+      try {
+        // Clean up stale layer/source from a previous render first
+        if (map.getLayer(layerId))  map.removeLayer(layerId)
+        if (map.getSource(sourceId)) map.removeSource(sourceId)
+
+        map.addSource(sourceId, {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            properties: {},
+            geometry: { type: "LineString", coordinates: coords },
+          },
+        })
+
+        map.addLayer({
+          id: layerId,
+          type: "line",
+          source: sourceId,
+          layout: { "line-join": "round", "line-cap": "round" },
+          paint: {
+            "line-color": colorMap[route._id] ?? "#4285F4",
+            "line-width": 3.5,
+            "line-opacity": 0.75,
+          },
+        })
+
+        addedSources.push(sourceId)
+        addedLayers.push(layerId)
+      } catch (err) {
+        console.warn("RouteLines: failed to add route", route._id, err)
+      }
+    })
+
+    return () => {
+      addedLayers.forEach((id)  => { try { if (map.getLayer(id))  map.removeLayer(id)  } catch {} })
+      addedSources.forEach((id) => { try { if (map.getSource(id)) map.removeSource(id) } catch {} })
+    }
+  // Re-run when the map is ready OR routes/colors change
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, isLoaded, routes, colorMap])
+
+  return null
+}
 
 // ─── Bus SVG icon ─────────────────────────────────────────────────────────────
 function BusMarkerSvg({ color = "#2563EB" }: { color?: string }) {
@@ -113,11 +184,15 @@ export function LiveMap() {
   const activeBusCount = Object.keys(liveBuses).length
   const mapLoading = routesLoading
 
-  // Assign colours to each route by index
-  const routeColorMap: Record<string, string> = {}
-  routes.forEach((r, i) => {
-    routeColorMap[r._id] = ROUTE_COLORS[i % ROUTE_COLORS.length]
-  })
+  // Assign colours to each route by index — memoized so the object reference
+  // only changes when routes actually change (prevents RouteLines from re-firing on every render)
+  const routeColorMap = useMemo(() => {
+    const map: Record<string, string> = {}
+    routes.forEach((r, i) => {
+      map[r._id] = ROUTE_COLORS[i % ROUTE_COLORS.length]
+    })
+    return map
+  }, [routes])
 
   return (
     <div className="flex flex-col h-full" style={{ height: "calc(100vh - 64px)" }}>
@@ -177,47 +252,53 @@ export function LiveMap() {
         >
           <MapControls showZoom showFullscreen />
 
-          {/* ── Route polylines ───────────────────────────────── */}
-          {routes.map((route) =>
-            route.routeLine?.length >= 2 ? (
-              <MapRoute
-                key={`route-line-${route._id}`}
-                coordinates={route.routeLine}
-                color={routeColorMap[route._id]}
-                width={3.5}
-                opacity={0.75}
-              />
-            ) : null,
-          )}
+          {/* ── Route polylines — via direct MapLibre API ──────────── */}
+          <RouteLines routes={routes} colorMap={routeColorMap} />
 
-          {/* ── Stoppage markers ─────────────────────────────── */}
+          {/* ── Stoppage dot markers — rendered on top of route lines ── */}
           {routes.flatMap((route) =>
-            route.stopages.map((stop, idx) => (
-              <MapMarker
-                key={`stop-${route._id}-${idx}`}
-                longitude={stop.coords[0]}
-                latitude={stop.coords[1]}
-              >
-                <MarkerContent>
-                  <div
-                    style={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: "50%",
-                      background: routeColorMap[route._id] ?? "#6B7280",
-                      border: "2px solid white",
-                      boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
-                    }}
-                  />
-                </MarkerContent>
-                <MarkerLabel
-                  position="bottom"
-                  className="bg-white/95 dark:bg-neutral-900/95 border border-neutral-200 dark:border-neutral-700 px-1.5 py-0.5 rounded shadow text-[9px] text-neutral-700 dark:text-neutral-300 whitespace-nowrap"
+            (route.stopages ?? []).map((stop, idx) => {
+              // stop.coords is [lng, lat] per the admin routes form
+              const rawCoords: any = stop.coords
+              const lng: number = Array.isArray(rawCoords)
+                ? rawCoords[0]
+                : rawCoords.lng ?? rawCoords.longitude
+              const lat: number = Array.isArray(rawCoords)
+                ? rawCoords[1]
+                : rawCoords.lat ?? rawCoords.latitude
+
+              return (
+                <MapMarker
+                  key={`stop-${route._id}-${idx}`}
+                  longitude={lng}
+                  latitude={lat}
                 >
-                  {stop.name}
-                </MarkerLabel>
-              </MapMarker>
-            )),
+                  {/* MarkerContent portals into marker.getElement() so both
+                      the dot AND the label follow the marker on map move */}
+                  <MarkerContent>
+                    <div style={{ position: "relative" }}>
+                      <div
+                        style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: "50%",
+                          background: routeColorMap[route._id] ?? "#6B7280",
+                          border: "2px solid white",
+                          boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
+                        }}
+                      />
+                      {/* Label inside the portal so it follows the marker */}
+                      <MarkerLabel
+                        position="bottom"
+                        className="bg-white/95 dark:bg-neutral-900/95 border border-neutral-200 dark:border-neutral-700 px-1.5 py-0.5 rounded shadow text-[9px] text-neutral-700 dark:text-neutral-300 whitespace-nowrap"
+                      >
+                        {stop.name}
+                      </MarkerLabel>
+                    </div>
+                  </MarkerContent>
+                </MapMarker>
+              )
+            }),
           )}
 
           {/* ── Live bus markers ─────────────────────────────── */}
@@ -227,19 +308,20 @@ export function LiveMap() {
               longitude={bus.lng}
               latitude={bus.lat}
             >
+              {/* Icon + name label both inside the portal so they follow the marker */}
               <MarkerContent>
-                <BusMarkerSvg color={routeColorMap[bus.routeId] ?? "#2563EB"} />
+                <div style={{ position: "relative", display: "inline-block" }}>
+                  <BusMarkerSvg color={routeColorMap[bus.routeId] ?? "#2563EB"} />
+                  <MarkerLabel
+                    position="bottom"
+                    className="bg-neutral-900/85 text-white px-2 py-0.5 rounded text-[10px] font-mono whitespace-nowrap shadow"
+                  >
+                    {bus.plateNumber}
+                  </MarkerLabel>
+                </div>
               </MarkerContent>
 
-              {/* Hover tooltip: plate number */}
-              <MarkerLabel
-                position="top"
-                className="bg-neutral-900/85 text-white px-2 py-0.5 rounded text-[10px] font-mono whitespace-nowrap shadow"
-              >
-                {bus.plateNumber}
-              </MarkerLabel>
-
-              {/* Click popup: plate + route */}
+              {/* Click popup: name + route */}
               <MarkerPopup>
                 <div className="p-2.5 min-w-[150px] text-xs">
                   <div className="flex items-center gap-1.5 mb-1.5">

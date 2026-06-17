@@ -99,7 +99,7 @@ export function Transactions() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
+  console.log(transactions)
   const fetchTransactions = useCallback(async (phone: string) => {
     setLoading(true)
     setError(null)
@@ -181,14 +181,14 @@ export function Transactions() {
                 <TableRow className="bg-neutral-50 dark:bg-neutral-900/60 hover:bg-neutral-50 dark:hover:bg-neutral-900/60">
                   <TableHead className="font-semibold text-neutral-600 dark:text-neutral-300 pl-6">
                     <span className="flex items-center gap-1">
-                      Passenger Phone <ArrowUpDown className="h-3 w-3 opacity-50" />
+                      Passenger <ArrowUpDown className="h-3 w-3 opacity-50" />
                     </span>
                   </TableHead>
                   <TableHead className="font-semibold text-neutral-600 dark:text-neutral-300">
-                    Start Stop
+                    Route
                   </TableHead>
                   <TableHead className="font-semibold text-neutral-600 dark:text-neutral-300">
-                    End Stop
+                    Traveled Distance
                   </TableHead>
                   <TableHead className="font-semibold text-neutral-600 dark:text-neutral-300 text-right">
                     Fare (৳)
@@ -235,17 +235,17 @@ export function Transactions() {
                     >
                       {/* Passenger phone */}
                       <TableCell className="pl-6 font-mono text-sm text-neutral-700 dark:text-neutral-300">
-                        {tx.userId?.phoneNumber ?? "—"}
+                        {tx.userId?.name || "—"}
                       </TableCell>
 
                       {/* Start stop */}
-                      <TableCell className="text-sm text-neutral-600 dark:text-neutral-400 max-w-[140px] truncate" title={tx.startStoppage}>
-                        {tx.startStoppage}
+                      <TableCell className="text-sm text-neutral-600 dark:text-neutral-400 max-w-[140px] truncate" title={tx.routeId?.routeName || "—"}>
+                        {tx.routeId?.routeName || "—"}
                       </TableCell>
 
                       {/* End stop */}
-                      <TableCell className="text-sm text-neutral-600 dark:text-neutral-400 max-w-[140px] truncate" title={tx.endStoppage ?? "—"}>
-                        {tx.endStoppage ?? "—"}
+                      <TableCell className="text-sm text-neutral-600 dark:text-neutral-400 max-w-[140px] truncate" title={tx.distanceInKm ? `${tx.distanceInKm.toFixed(2)} km` : "—"}>
+                        {tx.distanceInKm ? `${tx.distanceInKm.toFixed(2)} km` : "—"}
                       </TableCell>
 
                       {/* Fare */}

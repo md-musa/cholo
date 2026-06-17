@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { UserCircle2, Plus, Loader2, ShieldCheck } from "lucide-react"
+import { UserCircle2, Plus, Loader2, ShieldCheck, Gauge } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -59,6 +59,12 @@ export function Settings() {
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
+  // ── Fare Config state ──
+  const [ratePerKm, setRatePerKm] = useState<number | "">("")  // current saved value
+  const [rateInput, setRateInput] = useState<string>("")        // controlled input
+  const [fareLoading, setFareLoading] = useState(true)
+  const [fareSaving, setFareSaving] = useState(false)
+
   // ── Fetch admin accounts ──
   const fetchAdmins = async () => {
     if (!isSuperAdmin) return
@@ -81,8 +87,59 @@ export function Settings() {
 
   useEffect(() => {
     fetchAdmins()
+    fetchFareConfig()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // ── Fetch fare config ──
+  const fetchFareConfig = async () => {
+    setFareLoading(true)
+    try {
+      const token = localStorage.getItem("token")
+      const res = await fetch("http://localhost:4000/api/v1/fare-config", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const result = await res.json()
+      if (res.ok && result.success) {
+        setRatePerKm(result.data.ratePerKm)
+        setRateInput(String(result.data.ratePerKm))
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setFareLoading(false)
+    }
+  }
+
+  // ── Save fare config ──
+  const handleSaveFare = async () => {
+    const parsed = parseFloat(rateInput)
+    if (isNaN(parsed) || parsed <= 0) {
+      toast("Rate must be a positive number", "error")
+      return
+    }
+    setFareSaving(true)
+    try {
+      const token = localStorage.getItem("token")
+      const res = await fetch("http://localhost:4000/api/v1/fare-config", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ratePerKm: parsed }),
+      })
+      const result = await res.json()
+      if (!res.ok || !result.success) throw new Error(result.message || "Failed to update")
+      setRatePerKm(result.data.ratePerKm)
+      setRateInput(String(result.data.ratePerKm))
+      toast("Fare rate updated successfully", "success")
+    } catch (err: any) {
+      toast(err.message || "Failed to update fare rate", "error")
+    } finally {
+      setFareSaving(false)
+    }
+  }
 
   // ── Handle add admin ──
   const handleAddAdmin = async (e: React.FormEvent) => {
@@ -180,6 +237,65 @@ export function Settings() {
                 </span>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* ── Fare Configuration Card ── */}
+        <Card className="border border-neutral-200 dark:border-neutral-800 shadow-sm bg-white dark:bg-neutral-900">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-2">
+              <Gauge className="h-4 w-4 text-neutral-500" />
+              <CardTitle className="text-base font-semibold">Fare Configuration</CardTitle>
+            </div>
+            <CardDescription>
+              Set the per-kilometre fare rate charged to passengers on checkout.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {fareLoading ? (
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-9 w-36" />
+                <Skeleton className="h-9 w-20" />
+              </div>
+            ) : (
+              <div className="flex items-end gap-3">
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="rate-per-km"
+                    className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                  >
+                    Rate per km (৳)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">৳</span>
+                    <Input
+                      id="rate-per-km"
+                      type="number"
+                      min="0.1"
+                      step="0.5"
+                      value={rateInput}
+                      onChange={(e) => setRateInput(e.target.value)}
+                      disabled={fareSaving}
+                      className="w-32"
+                    />
+                    <span className="text-sm text-neutral-400">/km</span>
+                  </div>
+                </div>
+                <Button
+                  onClick={handleSaveFare}
+                  disabled={fareSaving || rateInput === String(ratePerKm)}
+                  size="sm"
+                  className="mb-0.5"
+                >
+                  {fareSaving ? (
+                    <><Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />Saving…</>
+                  ) : (
+                    "Save"
+                  )}
+                </Button>
+              </div>
+            )}
+
           </CardContent>
         </Card>
 
