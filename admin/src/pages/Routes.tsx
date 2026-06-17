@@ -37,8 +37,6 @@ import {
   MapPin,
   Map as MapIcon,
   ShieldAlert,
-  Edit2,
-  Settings
 } from "lucide-react"
 
 interface Stoppage {
@@ -57,10 +55,10 @@ interface Route {
 }
 
 export function Routes() {
-  const { data: routesResponse, isLoading, error, refetch } = useGetRoutesQuery()
+  const { data: routesResponse, isLoading } = useGetRoutesQuery()
   const [createRoute, { isLoading: isCreating }] = useCreateRouteMutation()
-  const [updateRoute, { isLoading: isUpdating }] = useUpdateRouteMutation()
-  const [deleteRoute, { isLoading: isDeleting }] = useDeleteRouteMutation()
+  const [updateRoute] = useUpdateRouteMutation()
+  const [deleteRoute] = useDeleteRouteMutation()
 
   const routes: Route[] = routesResponse?.data || []
 

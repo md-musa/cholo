@@ -5,6 +5,7 @@ import {
   Users,
   GitMerge,
   Bus,
+  Smartphone,
   Grid3X3,
   Map,
   Receipt,
@@ -28,6 +29,7 @@ const navItems = [
   { label: "Passengers", path: "/passengers", icon: Users },
   { label: "Routes", path: "/routes", icon: GitMerge },
   { label: "Buses", path: "/buses", icon: Bus },
+  { label: "POS Devices", path: "/pos-devices", icon: Smartphone },
   { label: "Fare Matrix", path: "/fare-matrix", icon: Grid3X3 },
   { label: "Live Map", path: "/live-map", icon: Map },
   { label: "Transactions", path: "/transactions", icon: Receipt },
@@ -132,8 +134,14 @@ export function MainLayout() {
           </div>
         </header>
 
-        {/* Scrollable Page Content */}
-        <main className="flex-1 overflow-y-auto p-8 bg-neutral-50/50 dark:bg-neutral-950/50">
+        {/* Page Content — full-height no-padding for live-map, scrollable for others */}
+        <main
+          className={`flex-1 overflow-hidden bg-neutral-50/50 dark:bg-neutral-950/50 ${
+            location.pathname === "/live-map"
+              ? "flex flex-col p-6"
+              : "overflow-y-auto p-8"
+          }`}
+        >
           <Outlet />
         </main>
       </div>

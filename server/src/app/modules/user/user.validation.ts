@@ -21,7 +21,7 @@ const updatePassenger = z.object({
 const updatePOSDevice = z.object({
   body: z.object({
     phoneNumber: z.string().optional(),
-    pin: z.string().length(6, "PIN must be 6 digits").optional(),
+    pin: z.string().min(4, "PIN must be 4–6 digits").max(6, "PIN must be 4–6 digits").regex(/^\d+$/, "PIN must contain only digits").optional(),
     assignedBus: z.string().length(24, "Invalid MongoDB ObjectId").optional(),
     assignedRoute: z.string().length(24, "Invalid MongoDB ObjectId").optional(),
     name: z.string().optional(),

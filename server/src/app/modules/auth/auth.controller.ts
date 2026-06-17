@@ -72,7 +72,7 @@ const getUsers = async (req: Request, res: Response): Promise<void> => {
 const refreshToken = async (req: Request, res: Response): Promise<void> => {
   const token = req.cookies?.refreshToken || req.body?.refreshToken;
   const result = await AuthService.refreshToken(token);
-  
+
   res.cookie("refreshToken", result.refreshToken);
 
   sendResponse(res, {

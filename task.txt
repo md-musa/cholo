@@ -1,0 +1,95 @@
+
+Build the Bus Management page for a Smart Public Transport System admin panel.
+Uses React.js, TypeScript, Tailwind CSS, and shadcn/ui.
+The layout shell already exists — build only the page content.
+
+Bus model fields:
+- name: String
+- busType: enum ["ac", "non-ac"]
+- capacity: Number (optional)
+- status: enum ["active", "inactive"] (optional)
+
+Sections:
+
+1. Page header:
+   - Title "Buses"
+   - "Add Bus" button on the right (opens dialog)
+
+2. Buses table:
+   Columns: Name, Type, Capacity, Status, Actions
+   - busType badge: ac = blue, non-ac = gray
+   - status badge: active = green, inactive = red
+   - Actions: "Edit" icon button, "Delete" icon button
+
+3. Add Bus dialog:
+   - Input: name
+   - Select: bus type (AC / Non-AC)
+   - Input: capacity (optional)
+   - Select: status — active / inactive (optional, defaults to active)
+   - Submit button
+   - Calls POST /bus
+
+4. Edit Bus dialog (opens on edit icon click):
+   - Same fields as Add
+   - Pre-filled with existing values
+   - Calls PATCH /bus/:id
+
+5. Delete confirmation:
+   - Simple shadcn AlertDialog on delete icon click
+   - "Are you sure you want to delete this bus?"
+   - Confirm calls DELETE /bus/:id
+
+Design rules:
+- Minimal and clean — just the table and dialogs
+- No extra panels or sheets
+- Toast notification on add, edit, delete success or failure
+- Loading state on the submit button during API calls
+
+Build the POS Device Management page for a Smart Public Transport System admin panel.
+Uses React.js, TypeScript, Tailwind CSS, and shadcn/ui.
+The layout shell already exists — build only the page content.
+
+POS Device model fields:
+- name: String (e.g. "POS-01")
+- phone: String (driver/conductor phone number used for login)
+- pin: String (4-6 digit PIN, hashed on backend)
+- busId: ObjectId ref Bus (optional, which bus this device is assigned to)
+- status: enum ["active", "inactive"]
+
+Sections:
+
+1. Page header:
+   - Title "POS Devices"
+   - "Add Device" button on the right (opens dialog)
+
+2. POS devices table:
+   Columns: Name, Phone, Assigned Bus, Status, Actions
+   - status badge: active = green, inactive = red
+   - Assigned Bus shows bus name or "Unassigned" if no busId
+   - Actions: "Edit" icon button, "Delete" icon button
+
+3. Add Device dialog:
+   - Input: name
+   - Input: phone number
+   - Input: PIN (4-6 digits, masked input)
+   - Select: assign to bus (dropdown of all buses, optional)
+   - Select: status — active / inactive (defaults to active)
+   - Submit button
+   - Calls POST /pos-device
+
+4. Edit Device dialog (opens on edit icon click):
+   - Same fields as Add
+   - Pre-filled with existing values
+   - PIN field is empty — only fill if changing the PIN
+   - Calls PATCH /pos-device/:id
+
+5. Delete confirmation:
+   - Simple shadcn AlertDialog on delete icon click
+   - "Are you sure you want to delete this device?"
+   - Confirm calls DELETE /pos-device/:id
+
+Design rules:
+- Minimal and clean — just the table and dialogs
+- Never display the PIN value anywhere in the UI
+- Toast notification on add, edit, delete success or failure
+- Loading state on submit button during API calls
