@@ -26,6 +26,12 @@ router.post(
   CardController.registerCard
 );
 
+router.get(
+  "/",
+  auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  CardController.getAllCards
+);
+
 router.patch(
   "/:id/issue",
   //auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
@@ -36,6 +42,12 @@ router.patch(
   "/:id/block",
   auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
   CardController.blockCard
+);
+
+router.patch(
+  "/:id/unblock",
+  auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  CardController.unblockCard
 );
 
 router.get(

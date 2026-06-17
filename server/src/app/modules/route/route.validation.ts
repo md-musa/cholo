@@ -1,16 +1,8 @@
 import { z } from "zod";
-import { STUDENT_DENSITY } from "../../../constants";
 
 const stopageSchema = z.object({
   name: z.string().nonempty("Stopage name is required"),
-  fare: z.number().nonnegative("Fare must be zero or positive"),
   coords: z.array(z.number()).length(2, "Coords must contain exactly two numbers"),
-});
-
-const waypointSchema = z.object({
-  name: z.string().optional(),
-  coords: z.array(z.number()).length(2, "Coords must contain exactly two numbers"),
-  studentDensity: z.enum([STUDENT_DENSITY.LOW, STUDENT_DENSITY.MEDIUM, STUDENT_DENSITY.HIGH]).optional(),
 });
 
 const create = z.object({
@@ -33,10 +25,6 @@ const create = z.object({
     routeLine: z.array(z.array(z.number())).nonempty("Route line is required"),
 
     stopages: z.array(stopageSchema),
-
-    assignedBuses: z.array(z.string()).optional(),
-
-    waypoints: z.array(waypointSchema).optional(),
   }),
 });
 
@@ -60,10 +48,6 @@ const update = z.object({
     routeLine: z.array(z.array(z.number())).optional(),
 
     stopages: z.array(stopageSchema).optional(),
-
-    assignedBuses: z.array(z.string()).optional(),
-
-    waypoints: z.array(waypointSchema).optional(),
   }),
 });
 

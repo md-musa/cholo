@@ -498,13 +498,47 @@ const handleWebhook = async (req: Request, res: Response): Promise<void> => {
   `);
 };
 
+const getAllCards = async (req: Request, res: Response): Promise<void> => {
+  const cards = await CardModel.find({}).populate("userId").lean();
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Cards retrieved successfully",
+    data: cards,
+  });
+};
+
+const unblockCard = async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+
+  const card = await CardModel.findByIdAndUpdate(
+    id,
+    { $set: { status: "active" } },
+    { new: true, runValidators: true }
+  );
+
+  if (!card) {
+    throw ApiError.notFound("Card not found");
+  }
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Card unblocked successfully",
+    data: card,
+  });
+};
+
 export const CardController = {
   registerCard,
   issueCard,
   blockCard,
+  unblockCard,
   getMyCard,
   getCardDetails,
   initRecharge,
   mockGatewayPage,
   handleWebhook,
+  getAllCards,
 };
+

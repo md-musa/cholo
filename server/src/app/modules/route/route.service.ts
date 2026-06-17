@@ -25,9 +25,6 @@ const deleteRoute = async (routeId: string): Promise<IRoute> => {
   if (!deletedRoute) {
     throw ApiError.notFound("Route not found");
   }
-  if (deletedRoute.assignedBuses && deletedRoute.assignedBuses.length > 0) {
-    throw ApiError.forbidden("Cannot delete route with assigned buses");
-  }
 
   await RouteModel.findByIdAndDelete(routeId);
   return deletedRoute;
