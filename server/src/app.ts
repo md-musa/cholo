@@ -13,7 +13,7 @@ import { broadcastLocation } from "./app/socket/broadcast";
 import { ErrorLogRoute } from "./app/modules/errorLog/errorLog.route";
 import { TripRoute } from "./app/modules/trip/trip.route";
 import { CardRoute } from "./app/modules/card/card.route";
-import { FareMatrixRoute } from "./app/modules/fareMatrix/fareMatrix.route";
+import { FareConfigRoute } from "./app/modules/fareConfig/fareConfig.route";
 
 const app: Application = express();
 
@@ -34,7 +34,7 @@ app.get("/", (req: Request, res: Response) => {
 
 app.use("/api/v1/trip", TripRoute);
 app.use("/api/v1/card", CardRoute);
-app.use("/api/v1/fare-matrices", FareMatrixRoute);
+app.use("/api/v1/fare-config", FareConfigRoute);
 app.use("/api/v1/auth", AuthRouter);
 app.use("/api/v1/users", UserRouter);
 app.use("/api/v1/buses", BusRouter);

@@ -3,19 +3,24 @@ import { RouteModel } from "../route/route.model";
 import ApiError from "../../../errors/ApiError";
 
 
-export function calculateDistance(checkinCoords: number[], checkoutCoords: number[], routeLine): number {
-  const checkinPoint = turf.point(checkinCoords);
-  const checkoutPoint = turf.point(checkoutCoords);
-  routeLine = turf.lineString(routeLine);
+export function calculateDistance(
+  checkinCoords: number[],
+  checkoutCoords: number[],
+  routeLine: number[][]
+): number {
+  const line = turf.lineString(routeLine);
+  const checkinPoint = turf.point(checkinCoords.reverse());
+  const checkoutPoint = turf.point(checkoutCoords.reverse());
 
-  // Snap points to the route
-  const snappedCheckin = turf.nearestPointOnLine(routeLine, checkinPoint);
-  const snappedCheckout = turf.nearestPointOnLine(routeLine, checkoutPoint);
+  // nearestPointOnLine snaps each point onto the route.
+  // properties.location = cumulative km from route start → snapped point (along the route).
+  const snappedCheckin = turf.nearestPointOnLine(line, checkinPoint, { units: "kilometers" });
+  const snappedCheckout = turf.nearestPointOnLine(line, checkoutPoint, { units: "kilometers" });
 
-  // Calculate distance along the route
-  const distance = turf.length(turf.lineSlice(snappedCheckin, snappedCheckout, routeLine), { units: "kilometers" });
-
-  return distance;
+  const checkinLoc: number = snappedCheckin.properties.location ?? 0;
+  const checkoutLoc: number = snappedCheckout.properties.location ?? 0;
+  const distanceKm = Math.abs(checkoutLoc - checkinLoc);
+  return distanceKm;
 }
 
 export function findNearestStop(userCoords, routeLine, stopages) {

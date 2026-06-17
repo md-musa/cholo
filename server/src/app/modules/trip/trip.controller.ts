@@ -5,10 +5,20 @@ import { TripModel } from "./trip.model";
 import { CardModel } from "../card/card.model";
 import { RouteModel } from "../route/route.model";
 import { PassengerModel } from "../auth/auth.model";
-import { calculateFare, deductFare } from "../fare/fare.service";
-import { calculateDistance, detectNearestStoppage } from "./trip.util";
+import { FareConfigModel } from "../fareConfig/fareConfig.model";
+import { deductFare } from "../fare/fare.service";
+import { calculateDistance } from "./trip.util";
 import sendResponse from "../../../shared/sendResponse";
 import ApiError from "../../../errors/ApiError";
+
+// ── Helper: get rate per km (auto-seed default if missing) ──────────────────
+async function getRatePerKm(): Promise<number> {
+  let config = await FareConfigModel.findOne().lean();
+  if (!config) {
+    config = await FareConfigModel.create({ ratePerKm: 5 });
+  }
+  return config.ratePerKm;
+}
 
 // POST /trip/tap
 // Receives: nfcUid, coords { lat, lng }, busId, routeId
@@ -23,49 +33,30 @@ const tapCard = async (req: Request, res: Response): Promise<void> => {
 
   // Find card by nfcUid
   const card = await CardModel.findOne({ nfcUid });
-  if (!card) {
-    throw ApiError.notFound("Card not registered");
-  }
+  if (!card) throw ApiError.notFound("Card not registered");
+  if (!card.userId) throw ApiError.badRequest("Card is not linked to any user");
 
-  // Reject if card is not linked to any user
-  if (!card.userId) {
-    throw ApiError.badRequest("Card is not linked to any user");
-  }
-
-  // Reject if card status is not active
   if (card.status === "blocked" || card.status === "expired") {
     throw ApiError.badRequest(`Card is ${card.status}`);
   }
-
   if (card.status !== "active") {
     throw ApiError.badRequest("Card is not active/issued yet");
   }
-
-  // Reject if card balance is at loan limit
   if (card.balance <= -100) {
-    throw ApiError.badRequest(
-      "Insufficient balance. Please recharge to continue"
-    );
+    throw ApiError.badRequest("Insufficient balance. Please recharge to continue");
   }
 
   // Check if card has an existing active trip
-  const activeTrip = await TripModel.findOne({
-    cardId: card._id,
-    status: "active",
-  });
+  const activeTrip = await TripModel.findOne({ cardId: card._id, status: "active" });
 
   if (!activeTrip) {
-    // --------------------------------------------------
-    // CHECK-IN
-    // --------------------------------------------------
-    const startStoppage = await detectNearestStoppage(coords, routeId);
-
+    // ── CHECK-IN ────────────────────────────────────────────────────────────
     const newTrip = await TripModel.create({
       userId: card.userId,
       cardId: card._id,
       routeId,
       busId,
-      startStoppage,
+      startStoppage: null,
       checkinCoords: {
         type: "Point",
         coordinates: [coords.lng, coords.lat],
@@ -74,42 +65,22 @@ const tapCard = async (req: Request, res: Response): Promise<void> => {
       fareStatus: "pending",
     });
 
-    console.log("check-in");
-    console.log(newTrip);
-
     sendResponse(res, {
       success: true,
       statusCode: StatusCodes.CREATED,
       message: "Check-in successful",
       data: {
+        checkIn: true,
         tripId: newTrip._id,
-        startStoppage: newTrip.startStoppage,
         checkinTime: newTrip.checkinTime,
         balance: card.balance,
       },
     });
   } else {
-    // --------------------------------------------------
-    // CHECK-OUT
-    // --------------------------------------------------
-    const endStoppage = await detectNearestStoppage(coords, routeId);
-
-    console.log(activeTrip.startStoppage, endStoppage);
-
-    // Calculate fare before starting session (read-only, no side effects)
-    let fare = 0;
-    try {
-      fare = await calculateFare(activeTrip.startStoppage, endStoppage, routeId);
-    } catch {
-      throw ApiError.internal("Fare entry not found for this route and stoppage pair");
-    }
-
-    console.log("Calculated fare:", fare);
-    // Fetch route for distance calculation before session
+    // ── CHECK-OUT ───────────────────────────────────────────────────────────
+    // Fetch route for distance calculation
     const route = await RouteModel.findById(routeId).lean();
-    if (!route) {
-      throw ApiError.notFound("Route not found");
-    }
+    if (!route) throw ApiError.notFound("Route not found");
 
     const distance = calculateDistance(
       activeTrip.checkinCoords.coordinates,
@@ -117,7 +88,9 @@ const tapCard = async (req: Request, res: Response): Promise<void> => {
       route.routeLine
     );
 
-    // Start MongoDB session for atomic fare deduction + trip update
+    const ratePerKm = await getRatePerKm();
+    const fare = Math.round(distance * ratePerKm);
+
     const session = await mongoose.startSession();
     session.startTransaction();
 
@@ -126,11 +99,7 @@ const tapCard = async (req: Request, res: Response): Promise<void> => {
       let remainingBalance = card.balance;
 
       try {
-        remainingBalance = await deductFare(
-          card._id.toString(),
-          fare,
-          session
-        );
+        remainingBalance = await deductFare(card._id.toString(), fare, session);
       } catch {
         fareStatus = "failed";
         remainingBalance = card.balance;
@@ -139,7 +108,7 @@ const tapCard = async (req: Request, res: Response): Promise<void> => {
       const updatedTrip = await TripModel.findByIdAndUpdate(
         activeTrip._id,
         {
-          endStoppage,
+          endStoppage: null,
           checkoutTime: new Date(),
           checkoutCoords: {
             type: "Point",
@@ -153,23 +122,20 @@ const tapCard = async (req: Request, res: Response): Promise<void> => {
         { session, new: true }
       );
 
-      if (!updatedTrip) {
-        throw ApiError.internal("Failed to update trip during checkout");
-      }
+      if (!updatedTrip) throw ApiError.internal("Failed to update trip during checkout");
 
       await session.commitTransaction();
       session.endSession();
 
-      console.log("checkout Trip:", updatedTrip);
       sendResponse(res, {
         success: true,
         statusCode: StatusCodes.OK,
         message: "Check-out successful",
         data: {
+          checkOut: true,
           tripId: updatedTrip._id,
-          startStoppage: activeTrip.startStoppage,
-          endStoppage,
-          distanceInKm: distance,
+          distanceInKm: parseFloat(distance.toFixed(2)),
+          ratePerKm,
           fareDeducted: fareStatus === "deducted" ? fare : 0,
           fareStatus,
           remainingBalance,
@@ -179,27 +145,17 @@ const tapCard = async (req: Request, res: Response): Promise<void> => {
     } catch (checkoutError) {
       await session.abortTransaction();
       session.endSession();
-      console.error("Checkout error:", checkoutError);
       throw checkoutError;
     }
   }
 };
-
-
-
-
-
-
-
 
 // GET /trip/active/:nfcUid
 const getActiveTrip = async (req: Request, res: Response): Promise<void> => {
   const { nfcUid } = req.params;
 
   const card = await CardModel.findOne({ nfcUid });
-  if (!card) {
-    throw ApiError.notFound("Card not found");
-  }
+  if (!card) throw ApiError.notFound("Card not found");
 
   const activeTrip = await TripModel.findOne({ cardId: card._id, status: "active" })
     .populate("userId routeId busId")
@@ -208,7 +164,9 @@ const getActiveTrip = async (req: Request, res: Response): Promise<void> => {
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
-    message: activeTrip ? "Active trip retrieved successfully" : "No active trip found for this card",
+    message: activeTrip
+      ? "Active trip retrieved successfully"
+      : "No active trip found for this card",
     data: activeTrip || null,
   });
 };
@@ -233,11 +191,7 @@ const getTripHistory = async (req: Request, res: Response): Promise<void> => {
     success: true,
     statusCode: StatusCodes.OK,
     message: "Trip history retrieved successfully",
-    meta: {
-      page,
-      limit,
-      total,
-    },
+    meta: { page, limit, total },
     data: trips,
   });
 };
@@ -246,35 +200,25 @@ const getTripHistory = async (req: Request, res: Response): Promise<void> => {
 const getDashboardStats = async (req: Request, res: Response): Promise<void> => {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
-
   const todayEnd = new Date();
   todayEnd.setHours(23, 59, 59, 999);
-
   const monthStart = new Date();
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
-
   const monthEnd = new Date();
   monthEnd.setHours(23, 59, 59, 999);
 
-  const [todayPayments, monthPayments, totalTransactions, totalUsers, lastTransactions] = await Promise.all([
-    TripModel.find({
-      createdAt: { $gte: todayStart, $lte: todayEnd },
-      fareStatus: "deducted",
-    }).lean(),
+  const [todayPayments, monthPayments, totalTransactions, totalUsers, lastTransactions] =
+    await Promise.all([
+      TripModel.find({ createdAt: { $gte: todayStart, $lte: todayEnd }, fareStatus: "deducted" }).lean(),
+      TripModel.find({ createdAt: { $gte: monthStart, $lte: monthEnd }, fareStatus: "deducted" }).lean(),
+      TripModel.countDocuments({ fareStatus: "deducted" }),
+      PassengerModel.countDocuments(),
+      TripModel.find().sort({ createdAt: -1 }).limit(10).populate("userId routeId busId").lean(),
+    ]);
 
-    TripModel.find({
-      createdAt: { $gte: monthStart, $lte: monthEnd },
-      fareStatus: "deducted",
-    }).lean(),
-
-    TripModel.countDocuments({ fareStatus: "deducted" }),
-    PassengerModel.countDocuments(),
-    TripModel.find().sort({ createdAt: -1 }).limit(10).populate("userId routeId busId").lean(),
-  ]);
-
-  const todaysIncome = todayPayments.reduce((sum, payment) => sum + (payment.fare || 0), 0);
-  const monthlyIncome = monthPayments.reduce((sum, payment) => sum + (payment.fare || 0), 0);
+  const todaysIncome = todayPayments.reduce((sum, p) => sum + (p.fare || 0), 0);
+  const monthlyIncome = monthPayments.reduce((sum, p) => sum + (p.fare || 0), 0);
   const todaysTransactions = todayPayments.length;
 
   sendResponse(res, {
@@ -282,13 +226,7 @@ const getDashboardStats = async (req: Request, res: Response): Promise<void> => 
     statusCode: StatusCodes.OK,
     message: "Dashboard stats fetched successfully",
     data: {
-      summary: {
-        todaysIncome,
-        monthlyIncome,
-        totalTransactions,
-        totalUsers,
-        todaysTransactions,
-      },
+      summary: { todaysIncome, monthlyIncome, totalTransactions, totalUsers, todaysTransactions },
       lastTransactions,
     },
   });
@@ -297,7 +235,6 @@ const getDashboardStats = async (req: Request, res: Response): Promise<void> => 
 // GET /trip/payment-history
 const getPaymentHistory = async (req: Request, res: Response): Promise<void> => {
   const { busId } = req.query;
-
   const filter: Record<string, any> = { status: "completed" };
   if (busId) filter.busId = busId;
 
@@ -315,20 +252,18 @@ const getPaymentHistory = async (req: Request, res: Response): Promise<void> => 
   });
 };
 
-// GET /trip/transactions?search=phoneNumber
+// GET /trip/transactions?search=phoneNumber  (admin panel)
 const getTransactions = async (req: Request, res: Response): Promise<void> => {
   const { search } = req.query;
-
   const filter: Record<string, any> = { status: "completed" };
 
   if (search && typeof search === "string" && search.trim()) {
-    // Find passenger by phone number (partial match)
     const passengers = await PassengerModel.find({
       phoneNumber: { $regex: search.trim(), $options: "i" },
-    }).select("_id").lean();
-
-    const passengerIds = passengers.map((p) => p._id);
-    filter.userId = { $in: passengerIds };
+    })
+      .select("_id")
+      .lean();
+    filter.userId = { $in: passengers.map((p) => p._id) };
   }
 
   const transactions = await TripModel.find(filter)

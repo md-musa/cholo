@@ -24,7 +24,7 @@ const tripSchema = new mongoose.Schema(
     },
     startStoppage: {
       type: String,
-      required: true,
+      default: null,
     },
     endStoppage: {
       type: String,
