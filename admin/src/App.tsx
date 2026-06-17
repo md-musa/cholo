@@ -9,6 +9,8 @@ import { Routes as RoutesPage } from "./pages/Routes"
 import { LiveMap } from "./pages/LiveMap"
 import { Buses } from "./pages/Buses"
 import { POSDevices } from "./pages/POSDevices"
+import { Transactions } from "./pages/Transactions"
+import { Settings } from "./pages/Settings"
 
 // Simple placeholder page for other sidebar routes
 function ComingSoon({ title }: { title: string }) {
@@ -42,9 +44,9 @@ export function App() {
             <Route path="/pos-devices" element={<POSDevices />} />
             <Route path="/fare-matrix" element={<ComingSoon title="Fare Matrix" />} />
             <Route path="/live-map" element={<LiveMap />} />
-            <Route path="/transactions" element={<ComingSoon title="Transactions" />} />
+            <Route path="/transactions" element={<Transactions />} />
             <Route path="/reports" element={<ComingSoon title="Reports" />} />
-            <Route path="/settings" element={<ComingSoon title="Settings" />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
         </Route>
 

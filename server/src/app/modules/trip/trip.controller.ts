@@ -315,10 +315,43 @@ const getPaymentHistory = async (req: Request, res: Response): Promise<void> => 
   });
 };
 
+// GET /trip/transactions?search=phoneNumber
+const getTransactions = async (req: Request, res: Response): Promise<void> => {
+  const { search } = req.query;
+
+  const filter: Record<string, any> = { status: "completed" };
+
+  if (search && typeof search === "string" && search.trim()) {
+    // Find passenger by phone number (partial match)
+    const passengers = await PassengerModel.find({
+      phoneNumber: { $regex: search.trim(), $options: "i" },
+    }).select("_id").lean();
+
+    const passengerIds = passengers.map((p) => p._id);
+    filter.userId = { $in: passengerIds };
+  }
+
+  const transactions = await TripModel.find(filter)
+    .sort({ createdAt: -1 })
+    .limit(20)
+    .populate("userId", "name phoneNumber")
+    .populate("routeId", "routeNo routeName")
+    .populate("busId", "name")
+    .lean();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Transactions fetched successfully",
+    data: transactions,
+  });
+};
+
 export const TripController = {
   tapCard,
   getActiveTrip,
   getTripHistory,
   getDashboardStats,
   getPaymentHistory,
+  getTransactions,
 };

@@ -48,6 +48,7 @@ export function Login() {
       localStorage.setItem("token", accessToken)
       localStorage.setItem("admin_name", user.name)
       localStorage.setItem("admin_role", user.role)
+      if (user.email) localStorage.setItem("admin_email", user.email)
 
       navigate("/dashboard", { replace: true })
     } catch (err: any) {

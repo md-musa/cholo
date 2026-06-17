@@ -6,10 +6,8 @@ import {
   GitMerge,
   Bus,
   Smartphone,
-  Grid3X3,
   Map,
   Receipt,
-  FileText,
   Settings,
   LogOut
 } from "lucide-react"
@@ -25,15 +23,13 @@ import { Button } from "@/components/ui/button"
 
 const navItems = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+  { label: "Live Map", path: "/live-map", icon: Map },
   { label: "Cards", path: "/cards", icon: CreditCard },
-  { label: "Passengers", path: "/passengers", icon: Users },
+  { label: "Transactions", path: "/transactions", icon: Receipt },
   { label: "Routes", path: "/routes", icon: GitMerge },
+  { label: "Passengers", path: "/passengers", icon: Users },
   { label: "Buses", path: "/buses", icon: Bus },
   { label: "POS Devices", path: "/pos-devices", icon: Smartphone },
-  { label: "Fare Matrix", path: "/fare-matrix", icon: Grid3X3 },
-  { label: "Live Map", path: "/live-map", icon: Map },
-  { label: "Transactions", path: "/transactions", icon: Receipt },
-  { label: "Reports", path: "/reports", icon: FileText },
   { label: "Settings", path: "/settings", icon: Settings },
 ]
 
@@ -48,6 +44,7 @@ export function MainLayout() {
     localStorage.removeItem("token")
     localStorage.removeItem("admin_name")
     localStorage.removeItem("admin_role")
+    localStorage.removeItem("admin_email")
     navigate("/login", { replace: true })
   }
 
@@ -82,11 +79,10 @@ export function MainLayout() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                  isActive
-                    ? "bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-50"
-                    : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 hover:text-neutral-900 dark:hover:text-neutral-50"
-                }`}
+                className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors ${isActive
+                  ? "bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-neutral-50"
+                  : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 hover:text-neutral-900 dark:hover:text-neutral-50"
+                  }`}
               >
                 <Icon className="h-4 w-4 shrink-0" />
                 {item.label}
@@ -136,11 +132,10 @@ export function MainLayout() {
 
         {/* Page Content — full-height no-padding for live-map, scrollable for others */}
         <main
-          className={`flex-1 overflow-hidden bg-neutral-50/50 dark:bg-neutral-950/50 ${
-            location.pathname === "/live-map"
-              ? "flex flex-col p-6"
-              : "overflow-y-auto p-8"
-          }`}
+          className={`flex-1 overflow-hidden bg-neutral-50/50 dark:bg-neutral-950/50 ${location.pathname === "/live-map"
+            ? "flex flex-col p-6"
+            : "overflow-y-auto p-8"
+            }`}
         >
           <Outlet />
         </main>

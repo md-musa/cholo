@@ -18,4 +18,7 @@ router.get("/history/:userId", TripController.getTripHistory);
 router.get("/dashboard-start", TripController.getDashboardStats);
 router.get("/payment-history", TripController.getPaymentHistory);
 
+// Admin: all transactions with optional phone search
+router.get("/transactions", TripController.getTransactions);
+
 export const TripRoute = router;
