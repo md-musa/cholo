@@ -1,35 +1,25 @@
 import { useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
 import LoadingScreen from "@/components/UI/LoadingScreen";
 import MinimalHeader from "@/components/UI/MinimalHeader";
-
 import { useAppSelector } from "@/store/storeConfig";
+
 import { useLocationSharingContext } from "./LocationContext";
 
 export default function LocationSharingScreen() {
   const router = useRouter();
-
-  // Auth & config state from Redux
   const { route, bus } = useAppSelector((state) => state.auth);
-  //console.log(route, bus);
+  const { isSharingLocation, lastLocationText, locationMessage, handleLocationToggle } = useLocationSharingContext();
 
-  // Location sharing state from Context
-  const {
-    isSharingLocation,
-    lastLocationText,
-    handleLocationToggle,
-  } = useLocationSharingContext();
-
-  // Redirection: if terminal route & bus are not set up, redirect to setup page
   useEffect(() => {
     if (!route || !bus) {
       router.replace("/home/setup");
     }
-  }, [route, bus]);
+  }, [bus, route, router]);
 
   if (!route || !bus) {
     return <LoadingScreen />;
@@ -46,7 +36,6 @@ export default function LocationSharingScreen() {
         />
 
         <View style={styles.content}>
-          {/* Visual Radar/Pulsing Animation Placeholder */}
           <View style={styles.radarContainer}>
             <View style={[styles.radarCircle, styles.outerCircle, isSharingLocation && styles.pulseActiveOuter]}>
               <View style={[styles.radarCircle, styles.midCircle, isSharingLocation && styles.pulseActiveMid]}>
@@ -54,14 +43,13 @@ export default function LocationSharingScreen() {
                   <MaterialCommunityIcons
                     name={isSharingLocation ? "map-marker-radius" : "map-marker-outline"}
                     size={48}
-                    color={isSharingLocation ? "#10b981" : "#64748b"}
+                    color={isSharingLocation ? "#111827" : "#9ca3af"}
                   />
                 </View>
               </View>
             </View>
           </View>
 
-          {/* Broadcast Status Card */}
           <View style={styles.statusCard}>
             <View style={styles.statusHeader}>
               <View style={[styles.statusIndicator, isSharingLocation ? styles.bgActive : styles.bgInactive]} />
@@ -72,28 +60,26 @@ export default function LocationSharingScreen() {
 
             <Text style={styles.statusDescription}>
               {isSharingLocation
-                ? "Your current coordinate updates are being sent to Transnova servers to update the passenger-facing arrival times."
-                : "Please enable location sharing to start broadcasting this vehicle's position on the live map."}
+                ? "Current coordinates are being sent to the server for live passenger updates."
+                : "Enable location sharing to broadcast this vehicle position on the live map."}
             </Text>
 
             <View style={styles.divider} />
 
             <View style={styles.infoRow}>
-              <Ionicons name="location-outline" size={20} color="#94a3b8" />
+              <Ionicons name="location-outline" size={20} color="#9ca3af" />
               <View style={styles.infoTextContainer}>
                 <Text style={styles.infoLabel}>GPS Coordinates</Text>
                 <Text style={styles.infoValue}>{lastLocationText}</Text>
               </View>
             </View>
+
+            {locationMessage ? <Text style={styles.inlineMessage}>{locationMessage}</Text> : null}
           </View>
 
-          {/* Action Toggle Button */}
           <TouchableOpacity
             onPress={() => handleLocationToggle(route._id, bus)}
-            style={[
-              styles.toggleBtn,
-              isSharingLocation ? styles.btnStop : styles.btnStart,
-            ]}
+            style={[styles.toggleBtn, isSharingLocation ? styles.btnStop : styles.btnStart]}
           >
             <View style={styles.btnContent}>
               <Ionicons
@@ -115,17 +101,18 @@ export default function LocationSharingScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#020617",
+    backgroundColor: "#ffffff",
   },
   mainContainer: {
     flex: 1,
+    backgroundColor: "#ffffff",
   },
   content: {
     flex: 1,
     padding: 24,
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#090d16",
+    backgroundColor: "#ffffff",
   },
   radarContainer: {
     flex: 1,
@@ -141,42 +128,42 @@ const styles = StyleSheet.create({
   outerCircle: {
     width: 220,
     height: 220,
-    backgroundColor: "rgba(100, 116, 139, 0.03)",
+    backgroundColor: "#fafafa",
     borderWidth: 1,
-    borderColor: "rgba(100, 116, 139, 0.05)",
+    borderColor: "#f3f4f6",
   },
   midCircle: {
     width: 160,
     height: 160,
-    backgroundColor: "rgba(100, 116, 139, 0.05)",
+    backgroundColor: "#ffffff",
     borderWidth: 1,
-    borderColor: "rgba(100, 116, 139, 0.08)",
+    borderColor: "#f3f4f6",
   },
   innerCircle: {
     width: 100,
     height: 100,
-    backgroundColor: "rgba(100, 116, 139, 0.08)",
+    backgroundColor: "#ffffff",
     borderWidth: 1,
-    borderColor: "rgba(100, 116, 139, 0.15)",
+    borderColor: "#e5e7eb",
   },
   pulseActiveOuter: {
-    backgroundColor: "rgba(16, 185, 129, 0.04)",
-    borderColor: "rgba(16, 185, 129, 0.1)",
+    backgroundColor: "#f9fafb",
+    borderColor: "#e5e7eb",
   },
   pulseActiveMid: {
-    backgroundColor: "rgba(16, 185, 129, 0.08)",
-    borderColor: "rgba(16, 185, 129, 0.15)",
+    backgroundColor: "#ffffff",
+    borderColor: "#e5e7eb",
   },
   pulseActiveInner: {
-    backgroundColor: "rgba(16, 185, 129, 0.12)",
-    borderColor: "rgba(16, 185, 129, 0.3)",
+    backgroundColor: "#ffffff",
+    borderColor: "#d1d5db",
   },
   statusCard: {
     width: "100%",
-    backgroundColor: "#0f172a",
+    backgroundColor: "#ffffff",
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#e5e7eb",
     padding: 24,
     marginBottom: 24,
   },
@@ -192,25 +179,25 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   bgActive: {
-    backgroundColor: "#10b981",
+    backgroundColor: "#111827",
   },
   bgInactive: {
-    backgroundColor: "#64748b",
+    backgroundColor: "#9ca3af",
   },
   statusTitle: {
-    color: "#f8fafc",
+    color: "#111827",
     fontSize: 16,
     fontWeight: "700",
   },
   statusDescription: {
-    color: "#94a3b8",
+    color: "#6b7280",
     fontSize: 13,
     lineHeight: 18,
     marginBottom: 20,
   },
   divider: {
     height: 1,
-    backgroundColor: "#1e293b",
+    backgroundColor: "#f3f4f6",
     marginBottom: 20,
   },
   infoRow: {
@@ -222,36 +209,36 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   infoLabel: {
-    color: "#64748b",
+    color: "#6b7280",
     fontSize: 11,
     fontWeight: "600",
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   infoValue: {
-    color: "#f8fafc",
+    color: "#111827",
     fontSize: 14,
     fontWeight: "600",
     marginTop: 2,
   },
-  marginTop: {
+  inlineMessage: {
     marginTop: 16,
+    color: "#6b7280",
+    fontSize: 13,
+    lineHeight: 18,
   },
   toggleBtn: {
     width: "100%",
-    borderRadius: 20,
+    borderRadius: 16,
     paddingVertical: 18,
     alignItems: "center",
     justifyContent: "center",
   },
   btnStart: {
-    backgroundColor: "#10b981",
+    backgroundColor: "#111827",
   },
   btnStop: {
-    backgroundColor: "#ef4444",
-  },
-  btnDisabled: {
-    opacity: 0.6,
+    backgroundColor: "#1f2937",
   },
   btnContent: {
     flexDirection: "row",

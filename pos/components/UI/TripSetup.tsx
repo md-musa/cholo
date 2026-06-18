@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
@@ -17,6 +11,7 @@ interface TripSetupProps {
   buses: any[];
   onBusChange: (id: string | null) => void;
   onSubmit: () => void;
+  message?: string | null;
 }
 
 export default function TripSetup({
@@ -27,25 +22,27 @@ export default function TripSetup({
   buses,
   onBusChange,
   onSubmit,
+  message,
 }: TripSetupProps) {
   return (
     <ScrollView contentContainerStyle={styles.setupContainer}>
       <View style={styles.setupHeader}>
         <View style={styles.setupLogo}>
-          <MaterialCommunityIcons name="bus-marker" size={40} color="white" />
+          <MaterialCommunityIcons name="bus-marker" size={32} color="#111827" />
         </View>
-        <Text style={styles.setupTitle}>Terminal Setup Required</Text>
+        <Text style={styles.setupEyebrow}>Transnova POS</Text>
+        <Text style={styles.setupTitle}>Terminal setup</Text>
         <Text style={styles.setupSubtitle}>
-          Please select the active route and bus before enabling card fare collection.
+          Select the active route and assigned bus before opening the scanner.
         </Text>
       </View>
 
       <View style={styles.setupCard}>
-        <Text style={styles.setupCardTitle}>Configure Terminal</Text>
-        
+        <Text style={styles.setupCardTitle}>Configure terminal</Text>
+
         <Text style={styles.inputLabel}>Select Active Route</Text>
         <View style={[styles.pickerWrap, styles.spacing]}>
-          <Picker selectedValue={routeId} onValueChange={onRouteChange} dropdownIconColor="#0f172a">
+          <Picker selectedValue={routeId} onValueChange={onRouteChange} dropdownIconColor="#111827">
             <Picker.Item label="Choose active route..." value={null} />
             {routes.map((route: any) => (
               <Picker.Item
@@ -59,7 +56,7 @@ export default function TripSetup({
 
         <Text style={styles.inputLabel}>Select Assigned Bus</Text>
         <View style={styles.pickerWrap}>
-          <Picker selectedValue={busId} onValueChange={onBusChange} dropdownIconColor="#0f172a">
+          <Picker selectedValue={busId} onValueChange={onBusChange} dropdownIconColor="#111827">
             <Picker.Item label="Choose active bus..." value={null} />
             {buses.map((bus: any) => (
               <Picker.Item key={bus._id} label={bus.name} value={bus._id} />
@@ -67,14 +64,13 @@ export default function TripSetup({
           </Picker>
         </View>
 
-        {routeId && busId && (
-          <TouchableOpacity
-            style={styles.setupSubmitBtn}
-            onPress={onSubmit}
-          >
-            <Text style={styles.setupSubmitBtnText}>Initialize Terminal</Text>
+        {message ? <Text style={styles.inlineMessage}>{message}</Text> : null}
+
+        {routeId && busId ? (
+          <TouchableOpacity style={styles.setupSubmitBtn} onPress={onSubmit}>
+            <Text style={styles.setupSubmitBtnText}>Open Scanner</Text>
           </TouchableOpacity>
-        )}
+        ) : null}
       </View>
     </ScrollView>
   );
@@ -85,6 +81,8 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 60,
     justifyContent: "center",
+    backgroundColor: "#ffffff",
+    flexGrow: 1,
   },
   setupHeader: {
     alignItems: "center",
@@ -94,20 +92,28 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 24,
-    backgroundColor: "#10b981",
+    backgroundColor: "#f3f4f6",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+  },
+  setupEyebrow: {
+    color: "#6b7280",
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 8,
   },
   setupTitle: {
     fontSize: 26,
     fontWeight: "700",
-    color: "#ffffff",
+    color: "#111827",
     textAlign: "center",
   },
   setupSubtitle: {
     fontSize: 14,
-    color: "#94a3b8",
+    color: "#6b7280",
     textAlign: "center",
     marginTop: 12,
     lineHeight: 20,
@@ -115,34 +121,41 @@ const styles = StyleSheet.create({
   },
   setupCard: {
     backgroundColor: "#ffffff",
-    borderRadius: 24,
+    borderRadius: 28,
     padding: 24,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
   },
   setupCardTitle: {
     fontSize: 18,
-    fontWeight: "600",
-    color: "#0f172a",
+    fontWeight: "700",
+    color: "#111827",
     marginBottom: 20,
   },
   inputLabel: {
-    color: "#475569",
+    color: "#374151",
     fontWeight: "600",
     fontSize: 13,
     marginBottom: 8,
   },
   pickerWrap: {
     borderWidth: 1,
-    borderColor: "#cbd5e1",
-    borderRadius: 16,
+    borderColor: "#e5e7eb",
+    borderRadius: 14,
     overflow: "hidden",
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#fcfcfc",
   },
   spacing: {
     marginBottom: 20,
   },
+  inlineMessage: {
+    marginTop: 16,
+    color: "#b91c1c",
+    fontSize: 13,
+  },
   setupSubmitBtn: {
-    backgroundColor: "#10b981",
-    borderRadius: 16,
+    backgroundColor: "#111827",
+    borderRadius: 14,
     paddingVertical: 16,
     marginTop: 28,
     alignItems: "center",

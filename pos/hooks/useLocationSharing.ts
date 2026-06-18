@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { Alert } from "react-native";
 import * as Location from "expo-location";
+
 import socket from "@/config/socketIoConfig";
 import { SOCKET_EVENTS } from "@/constants";
 import { requestForegroundLocationPermission } from "@/utils/payUtil";
-import { ToastUtil } from "@/utils/toastUtil";
 
 interface UseLocationSharingProps {
   user: any;
@@ -13,12 +13,14 @@ interface UseLocationSharingProps {
 export function useLocationSharing({ user }: UseLocationSharingProps) {
   const [isSharingLocation, setIsSharingLocation] = useState(false);
   const [lastLocationText, setLastLocationText] = useState("Waiting for GPS");
+  const [locationMessage, setLocationMessage] = useState<string | null>(null);
 
   const locationSubscriptionRef = useRef<Location.LocationSubscription | null>(null);
   const mountedRef = useRef(true);
 
   useEffect(() => {
     mountedRef.current = true;
+
     return () => {
       mountedRef.current = false;
       locationSubscriptionRef.current?.remove();
@@ -33,6 +35,7 @@ export function useLocationSharing({ user }: UseLocationSharingProps) {
     locationSubscriptionRef.current = null;
     setIsSharingLocation(false);
     setLastLocationText("Location sharing stopped");
+    setLocationMessage("Location sharing stopped.");
     socket.disconnect();
   };
 
@@ -40,24 +43,25 @@ export function useLocationSharing({ user }: UseLocationSharingProps) {
     const userId = user?.userId || user?._id;
 
     if (!userId || !routeId || !selectedBus) {
-      ToastUtil.error("Select route and bus first.");
+      setLocationMessage("Select route and bus first.");
       return;
     }
 
     const permissionGranted = await requestForegroundLocationPermission();
     if (!permissionGranted) {
+      setLocationMessage("Location permission is required.");
       return;
     }
 
     try {
+      setLocationMessage(null);
+
       if (!socket.connected) {
         socket.connect();
       }
 
       socket.off("connect");
-      socket.on("connect", () => {
-        ToastUtil.success("Socket connected for live tracking.");
-      });
+      socket.on("connect", () => undefined);
 
       locationSubscriptionRef.current?.remove();
       locationSubscriptionRef.current = await Location.watchPositionAsync(
@@ -78,24 +82,22 @@ export function useLocationSharing({ user }: UseLocationSharingProps) {
           };
 
           if (!socket.connected) {
-            console.log("SOCKET NOT CONNECTED, CONNECTING...");
             socket.connect();
           }
 
           socket.emit(SOCKET_EVENTS.BROADCAST_BUS_LOCATION, payload);
 
-          console.log("LOCATION BROADCASTED:", payload);
           if (mountedRef.current) {
             setLastLocationText(`${location.coords.latitude.toFixed(5)}, ${location.coords.longitude.toFixed(5)}`);
           }
-        }
+        },
       );
 
       setIsSharingLocation(true);
       setLastLocationText("Location sharing active");
-      ToastUtil.success("Foreground location sharing started.");
+      setLocationMessage("Live location sharing is active.");
     } catch (error: any) {
-      ToastUtil.error(error?.message || "Failed to start sharing.");
+      setLocationMessage(error?.message || "Failed to start sharing.");
     }
   };
 
@@ -109,15 +111,17 @@ export function useLocationSharing({ user }: UseLocationSharingProps) {
           onPress: stopForegroundLocationSharing,
         },
       ]);
-    } else {
-      await startForegroundLocationSharing(routeId, selectedBus);
+      return;
     }
+
+    await startForegroundLocationSharing(routeId, selectedBus);
   };
 
   return {
     isSharingLocation,
     lastLocationText,
-    isStartingTrip: false, // Compatibility legacy check
+    locationMessage,
+    isStartingTrip: false,
     stopForegroundLocationSharing,
     startForegroundLocationSharing,
     handleLocationToggle,

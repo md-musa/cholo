@@ -1,5 +1,6 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+
 import { LocationSharingProvider } from "./LocationContext";
 
 export default function HomeLayout() {
@@ -8,15 +9,18 @@ export default function HomeLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
+          sceneStyle: {
+            backgroundColor: "#ffffff",
+          },
           tabBarStyle: {
-            backgroundColor: "#0f172a",
-            borderTopColor: "#1e293b",
-            height: 64,
+            backgroundColor: "#ffffff",
+            borderTopColor: "#e5e7eb",
+            height: 68,
             paddingBottom: 10,
             paddingTop: 8,
           },
-          tabBarActiveTintColor: "#10b981",
-          tabBarInactiveTintColor: "#64748b",
+          tabBarActiveTintColor: "#111827",
+          tabBarInactiveTintColor: "#9ca3af",
           tabBarLabelStyle: {
             fontSize: 12,
             fontWeight: "600",

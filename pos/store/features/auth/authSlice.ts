@@ -4,6 +4,9 @@ import { USER_ROLES } from "@/constants";
 import { IRoute } from "@/store/features/route/route.interface";
 
 export interface AuthUser {
+  _id?: string;
+  name?: string;
+  email?: string;
   phoneNumber: string;
   role: USER_ROLES;
   userId: string;

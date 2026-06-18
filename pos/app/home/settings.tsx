@@ -1,5 +1,6 @@
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -7,35 +8,31 @@ import { useRouter } from "expo-router";
 import { ASYNC_STORAGE_KEYS } from "@/constants";
 import { clearCredentials } from "@/store/features/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "@/store/storeConfig";
+
 import { useLocationSharingContext } from "./LocationContext";
-import { ToastUtil } from "@/utils/toastUtil";
 
 export default function SettingsScreen() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const { stopForegroundLocationSharing } = useLocationSharingContext();
+  const [message, setMessage] = useState<string | null>(null);
 
   const handleLogout = async () => {
     try {
-      // Stop location sharing if active
       stopForegroundLocationSharing();
 
-      // Clear storage
       await AsyncStorage.multiRemove([
         ASYNC_STORAGE_KEYS.AUTH_TOKEN,
         ASYNC_STORAGE_KEYS.CURRENT_ROUTE,
         "current_bus",
       ]);
 
-      // Clear redux
       dispatch(clearCredentials());
-
-      ToastUtil.success("Logged out successfully.");
       router.replace("/login");
-    } catch (err) {
-      console.log("Logout error:", err);
-      ToastUtil.error("Failed to log out cleanly.");
+    } catch (error) {
+      console.log("Logout error:", error);
+      setMessage("Failed to log out cleanly.");
     }
   };
 
@@ -43,7 +40,7 @@ export default function SettingsScreen() {
     if (!name) return "OP";
     return name
       .split(" ")
-      .map((n) => n[0])
+      .map((part) => part[0])
       .join("")
       .substring(0, 2)
       .toUpperCase();
@@ -53,20 +50,18 @@ export default function SettingsScreen() {
     if (!role) return "Operator";
     return role
       .split("_")
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
       .join(" ");
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {/* Title Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Operator Settings</Text>
-          <Text style={styles.headerSubtitle}>Manage terminal console & operator profile</Text>
+          <Text style={styles.headerTitle}>Settings</Text>
+          <Text style={styles.headerSubtitle}>Manage the active POS device session.</Text>
         </View>
 
-        {/* Profile Card */}
         <View style={styles.profileCard}>
           <View style={styles.avatarContainer}>
             <View style={styles.avatar}>
@@ -81,7 +76,6 @@ export default function SettingsScreen() {
           <Text style={styles.profileEmail}>{user?.email || "operator@transnova.com"}</Text>
         </View>
 
-        {/* Console Config Stats */}
         <View style={styles.consoleCard}>
           <Text style={styles.consoleCardTitle}>Terminal Info</Text>
           <View style={styles.statsRow}>
@@ -90,9 +84,10 @@ export default function SettingsScreen() {
               <Text style={styles.activeBadgeText}>Online</Text>
             </View>
           </View>
+
+          {message ? <Text style={styles.inlineMessage}>{message}</Text> : null}
         </View>
 
-        {/* Log Out Action */}
         <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
           <Ionicons name="log-out-outline" size={22} color="white" />
           <Text style={styles.logoutButtonText}>Log Out Console</Text>
@@ -105,51 +100,50 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#020617",
+    backgroundColor: "#ffffff",
   },
   container: {
     flex: 1,
     padding: 24,
     justifyContent: "space-between",
-    backgroundColor: "#090d16",
+    backgroundColor: "#ffffff",
   },
   header: {
     marginTop: 16,
     marginBottom: 32,
   },
   headerTitle: {
-    color: "#ffffff",
+    color: "#111827",
     fontSize: 28,
     fontWeight: "700",
   },
   headerSubtitle: {
-    color: "#64748b",
+    color: "#6b7280",
     fontSize: 14,
     marginTop: 6,
   },
   profileCard: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#ffffff",
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#e5e7eb",
     padding: 32,
     alignItems: "center",
     width: "100%",
   },
   avatarContainer: {
     alignItems: "center",
-    position: "relative",
     marginBottom: 20,
   },
   avatar: {
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: "#10b981",
+    backgroundColor: "#111827",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 4,
-    borderColor: "#1e293b",
+    borderColor: "#f3f4f6",
   },
   avatarText: {
     color: "#ffffff",
@@ -157,44 +151,44 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   badge: {
-    backgroundColor: "rgba(16, 185, 129, 0.15)",
+    backgroundColor: "#f3f4f6",
     borderWidth: 1,
-    borderColor: "rgba(16, 185, 129, 0.3)",
+    borderColor: "#e5e7eb",
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 4,
     marginTop: -12,
   },
   badgeText: {
-    color: "#10b981",
+    color: "#111827",
     fontSize: 11,
     fontWeight: "700",
     textTransform: "uppercase",
   },
   profileName: {
-    color: "#ffffff",
+    color: "#111827",
     fontSize: 22,
     fontWeight: "700",
     textAlign: "center",
   },
   profileEmail: {
-    color: "#94a3b8",
+    color: "#6b7280",
     fontSize: 14,
     marginTop: 6,
     textAlign: "center",
   },
   consoleCard: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#ffffff",
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#e5e7eb",
     padding: 24,
     width: "100%",
     flex: 1,
     marginVertical: 24,
   },
   consoleCardTitle: {
-    color: "#ffffff",
+    color: "#111827",
     fontSize: 16,
     fontWeight: "700",
     marginBottom: 16,
@@ -205,24 +199,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   statLabel: {
-    color: "#64748b",
+    color: "#6b7280",
     fontSize: 14,
     fontWeight: "500",
   },
   activeBadge: {
-    backgroundColor: "rgba(16, 185, 129, 0.15)",
+    backgroundColor: "#f3f4f6",
     borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   activeBadgeText: {
-    color: "#10b981",
+    color: "#111827",
     fontSize: 12,
     fontWeight: "600",
   },
+  inlineMessage: {
+    marginTop: 16,
+    color: "#b91c1c",
+    fontSize: 13,
+  },
   logoutButton: {
-    backgroundColor: "#ef4444",
-    borderRadius: 20,
+    backgroundColor: "#111827",
+    borderRadius: 16,
     paddingVertical: 18,
     flexDirection: "row",
     alignItems: "center",

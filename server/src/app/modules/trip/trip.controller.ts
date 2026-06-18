@@ -35,6 +35,8 @@ const tapCard = async (req: Request, res: Response): Promise<void> => {
   const card = await CardModel.findOne({ nfcUid });
   if (!card) throw ApiError.notFound("Card not registered");
   if (!card.userId) throw ApiError.badRequest("Card is not linked to any user");
+  const passenger = await PassengerModel.findById(card.userId).select("name").lean();
+  const passengerName = passenger?.name || "Passenger";
 
   if (card.status === "blocked" || card.status === "expired") {
     throw ApiError.badRequest(`Card is ${card.status}`);
@@ -70,6 +72,7 @@ const tapCard = async (req: Request, res: Response): Promise<void> => {
       statusCode: StatusCodes.CREATED,
       message: "Check-in successful",
       data: {
+        name: passengerName,
         checkIn: true,
         tripId: newTrip._id,
         checkinTime: newTrip.checkinTime,
@@ -132,6 +135,7 @@ const tapCard = async (req: Request, res: Response): Promise<void> => {
         statusCode: StatusCodes.OK,
         message: "Check-out successful",
         data: {
+          name: passengerName,
           checkOut: true,
           tripId: updatedTrip._id,
           distanceInKm: parseFloat(distance.toFixed(2)),
