@@ -7,6 +7,8 @@ export interface AuthUser {
   phoneNumber: string;
   role: USER_ROLES;
   userId: string;
+  name?: string | null;
+  email?: string | null;
 }
 
 interface AuthState {

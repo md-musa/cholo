@@ -1,373 +1,256 @@
 import React from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+
 import { ScanState, PaymentResponse } from "../../app/home/types";
 
 interface NfcScannerProps {
+  nfcSupported: boolean;
   scanState: ScanState;
   scanError: string | null;
   lastTransaction: PaymentResponse | null;
-  onScanCard: () => void;
-  onReset: () => void;
+  onDemoScan: () => void;
 }
 
-export default function NfcScanner({ scanState, scanError, lastTransaction, onScanCard, onReset }: NfcScannerProps) {
+export default function NfcScanner({
+  nfcSupported,
+  scanState,
+  scanError,
+  lastTransaction,
+  onDemoScan,
+}: NfcScannerProps) {
+  const isCheckout = lastTransaction?.message?.toLowerCase().includes("check-out");
+  const isCheckin = lastTransaction?.message?.toLowerCase().includes("check-in");
+
   return (
-    <View style={styles.fullScreenNfcArea}>
-      {scanState === "idle" && (
-        <View style={styles.centeredStateContent}>
-          <View style={[styles.bigIconContainer, styles.idleColor]}>
+    <View style={styles.container}>
+      {(scanState === "idle" || scanState === "scanning") && (
+        <View style={styles.centeredContent}>
+          <View style={styles.iconWrap}>
             <MaterialCommunityIcons name="contactless-payment" size={80} color="#10b981" />
           </View>
-          <Text style={styles.stateTitle}>Ready to Collect Fare</Text>
-          <Text style={styles.stateSubtitle}>Tap passenger NFC smart card to complete checkout.</Text>
-
-          <TouchableOpacity onPress={onScanCard} style={[styles.giantScanBtn, styles.giantScanBtnIdle]}>
-            <Text style={styles.giantScanBtnText}>Tap Card Now</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {scanState === "scanning" && (
-        <View style={styles.centeredStateContent}>
-          <View style={[styles.bigIconContainer, styles.scanningColor]}>
-            <ActivityIndicator size={80} color="#6366f1" />
-          </View>
-          <Text style={styles.stateTitle}>Scanning NFC Card</Text>
-          <Text style={styles.stateSubtitle}>Place passenger card close to the back of the device.</Text>
+          <Text style={styles.title}>Ready to Scan</Text>
+          <Text style={styles.subtitle}>
+            {nfcSupported
+              ? "Hold the card near the device. Reading stays on continuously."
+              : "NFC is not supported on this device. Use the demo button to test."}
+          </Text>
         </View>
       )}
 
       {scanState === "processing" && (
-        <View style={styles.centeredStateContent}>
-          <View style={[styles.bigIconContainer, styles.processingColor]}>
-            <ActivityIndicator size="large" color="#e2e8f0" />
+        <View style={[styles.centeredContent, styles.fullScreenCard, styles.loadingCard]}>
+          <View style={styles.iconWrap}>
+            <ActivityIndicator size="large" color="#10b981" />
           </View>
-          <Text style={styles.stateTitle}>Processing Payment</Text>
-          <Text style={styles.stateSubtitle}>Connecting with Transnova servers, please wait...</Text>
+          <Text style={styles.fullScreenTitle}>Processing</Text>
+          <Text style={styles.fullScreenSubtitle}>Please wait for a while</Text>
         </View>
       )}
 
-      {scanState === "success" && (() => {
-        const isCheckIn = lastTransaction?.message === "Check-in successful";
-        return (
-          <View style={[styles.fullScreenStatusCard, styles.successBackground]}>
-            <Ionicons name="checkmark-circle" size={120} color="white" />
-            <Text style={styles.fullScreenStatusTitle}>
-              {isCheckIn ? "Check-In Successful" : "Check-Out Successful"}
-            </Text>
+      {scanState === "success" && (
+        <View style={[styles.centeredContent, styles.fullScreenCard, styles.successCard]}>
+          <Ionicons name="checkmark-circle" size={64} color="#10b981" />
+          <Text style={styles.fullScreenTitle}>
+            {isCheckout
+              ? "Check-Out Successful"
+              : isCheckin
+                ? "Check-In Successful"
+                : lastTransaction?.message || "Success"}
+          </Text>
+          {/* <Text style={styles.fullScreenSubtitle}>{lastTransaction?.message || "Transaction completed."}</Text> */}
 
-            <View style={styles.successDetailsCard}>
-              {isCheckIn ? (
-                <View>
-                  <Text style={styles.detailLabel}>Boarded From</Text>
-                  <Text style={styles.detailValBig}>
-                    {lastTransaction?.data?.startStoppage || "Active Stoppage"}
-                  </Text>
-
-                  <View style={styles.detailDivider} />
-
-                  <View style={styles.detailRow}>
-                    <View style={styles.detailCol}>
-                      <Text style={styles.detailLabel}>Current Balance</Text>
-                      <Text style={styles.detailValBold}>
-                        {typeof lastTransaction?.data?.balance === "number"
-                          ? `${lastTransaction.data.balance} BDT`
-                          : "-- BDT"}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.detailDivider} />
-
-                  <View style={styles.hintContainer}>
-                    <Ionicons name="information-circle-outline" size={18} color="#cbd5e1" style={styles.hintIcon} />
-                    <Text style={styles.hintText}>
-                      Please tap your card again when exiting the bus to checkout and complete your fare payment.
-                    </Text>
-                  </View>
-                </View>
-              ) : (
-                <View>
-                  <Text style={styles.detailLabel}>Trip Segment</Text>
-                  <Text style={styles.detailValBig}>
-                    {lastTransaction?.data?.startStoppage || "Origin"} → {lastTransaction?.data?.endStoppage || "Destination"}
-                  </Text>
-
-                  <View style={styles.detailDivider} />
-
-                  <View style={styles.detailRow}>
-                    <View style={styles.detailCol}>
-                      <Text style={styles.detailLabel}>Fare Deducted</Text>
-                      <Text style={styles.detailValBold}>
-                        {typeof lastTransaction?.data?.fareDeducted === "number"
-                          ? `${lastTransaction.data.fareDeducted} BDT`
-                          : "-- BDT"}
-                      </Text>
-                    </View>
-                    <View style={styles.detailCol}>
-                      <Text style={styles.detailLabel}>Remaining Balance</Text>
-                      <Text style={styles.detailValBold}>
-                        {typeof lastTransaction?.data?.remainingBalance === "number"
-                          ? `${lastTransaction.data.remainingBalance} BDT`
-                          : "-- BDT"}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.detailDivider} />
-
-                  <Text style={styles.detailLabel}>Distance Traveled</Text>
-                  <Text style={styles.detailValSmall}>
+          <View style={styles.detailsWrap}>
+            {isCheckout ? (
+              <>
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailLabel}>Distance</Text>
+                  <Text style={styles.detailValue}>
                     {typeof lastTransaction?.data?.distanceInKm === "number"
                       ? `${lastTransaction.data.distanceInKm.toFixed(2)} km`
-                      : "-- km"}
+                      : "--"}
                   </Text>
                 </View>
-              )}
-            </View>
-
-            <TouchableOpacity onPress={onReset} style={styles.nextPassengerBtn}>
-              <Text style={styles.nextPassengerBtnText}>Next Passenger</Text>
-            </TouchableOpacity>
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailLabel}>Fare</Text>
+                  <Text style={styles.detailValue}>
+                    {typeof lastTransaction?.data?.fareDeducted === "number"
+                      ? `${lastTransaction.data.fareDeducted} BDT`
+                      : "--"}
+                  </Text>
+                </View>
+                <View style={styles.detailItem}>
+                  <Text style={styles.detailLabel}>Remaining Balance</Text>
+                  <Text style={styles.detailValue}>
+                    {typeof lastTransaction?.data?.remainingBalance === "number"
+                      ? `${lastTransaction.data.remainingBalance} BDT`
+                      : "--"}
+                  </Text>
+                </View>
+              </>
+            ) : (
+              <View style={styles.detailItem}>
+                <Text style={styles.detailLabel}>Balance</Text>
+                <Text style={styles.detailValue}>
+                  {typeof lastTransaction?.data?.balance === "number" ? `${lastTransaction.data.balance} BDT` : "--"}
+                </Text>
+              </View>
+            )}
           </View>
-        );
-      })()}
+        </View>
+      )}
 
       {scanState === "error" && (
-        <View style={[styles.fullScreenStatusCard, styles.errorBackground]}>
-          <Ionicons name="alert-circle" size={120} color="white" />
-          <Text style={styles.fullScreenStatusTitle}>Transaction Failed</Text>
-
-          <View style={styles.errorDetailsCard}>
-            <Text style={styles.errorTextLabel}>Error Details</Text>
-            <Text style={styles.errorTextValue}>{scanError || "An unexpected network error occurred."}</Text>
-          </View>
-
-          <TouchableOpacity onPress={onScanCard} style={styles.retryBtn}>
-            <Text style={styles.retryBtnText}>Try Again</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={onReset} style={styles.cancelErrorBtn}>
-            <Text style={styles.cancelErrorBtnText}>Back</Text>
-          </TouchableOpacity>
+        <View style={[styles.centeredContent, styles.fullScreenCard, styles.errorCard]}>
+          <Ionicons name="alert-circle" size={64} color="#b42318" />
+          <Text style={styles.fullScreenTitle}>Transaction Failed</Text>
+          <Text style={styles.errorText}>{scanError || "An unexpected network error occurred."}</Text>
         </View>
+      )}
+
+      {!nfcSupported && (
+        <TouchableOpacity onPress={onDemoScan} style={styles.demoButton}>
+          <Ionicons name="flask-outline" size={18} color="#ffffff" />
+          <Text style={styles.demoButtonText}>Demo</Text>
+        </TouchableOpacity>
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  fullScreenNfcArea: {
+  container: {
     flex: 1,
+    width: "100%",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#090d16",
-    width: "100%",
+    backgroundColor: "#f3f0ea",
   },
-  centeredStateContent: {
+  centeredContent: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 40,
     width: "100%",
-  },
-  bigIconContainer: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    alignItems: "center",
     justifyContent: "center",
-    marginBottom: 40,
-  },
-  idleColor: {
-    backgroundColor: "rgba(16, 185, 129, 0.1)",
-    borderWidth: 1,
-    borderColor: "rgba(16, 185, 129, 0.2)",
-  },
-  scanningColor: {
-    backgroundColor: "rgba(99, 102, 241, 0.1)",
-    borderWidth: 1,
-    borderColor: "rgba(99, 102, 241, 0.2)",
-  },
-  processingColor: {
-    backgroundColor: "rgba(148, 163, 184, 0.1)",
-    borderWidth: 1,
-    borderColor: "rgba(148, 163, 184, 0.2)",
-  },
-  stateTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#ffffff",
-    textAlign: "center",
-    marginBottom: 12,
-  },
-  stateSubtitle: {
-    fontSize: 14,
-    color: "#94a3b8",
-    textAlign: "center",
-    lineHeight: 22,
-    marginBottom: 40,
-  },
-  giantScanBtn: {
-    width: "100%",
-    paddingVertical: 20,
-    borderRadius: 20,
     alignItems: "center",
-    justifyContent: "center",
+    paddingHorizontal: 36,
   },
-  giantScanBtnIdle: {
-    backgroundColor: "#10b981",
-  },
-  giantScanBtnText: {
-    color: "#ffffff",
-    fontSize: 18,
-    fontWeight: "700",
-    letterSpacing: 0.5,
-  },
-  fullScreenStatusCard: {
+  fullScreenCard: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: "center",
+    paddingHorizontal: 32,
+  },
+  loadingCard: {
+    backgroundColor: "#f3f0ea",
+  },
+  iconWrap: {
+    width: 160,
+    height: 160,
+    borderRadius: 80,
     alignItems: "center",
-    padding: 24,
+    justifyContent: "center",
+    marginBottom: 28,
+    backgroundColor: "#fffdf9",
+    borderWidth: 1,
+    borderColor: "#ddd6cb",
   },
-  successBackground: {
-    backgroundColor: "#065f46",
+  title: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#1f2937",
+    textAlign: "center",
+    marginBottom: 10,
   },
-  errorBackground: {
-    backgroundColor: "#991b1b",
+  subtitle: {
+    fontSize: 14,
+    lineHeight: 22,
+    color: "#6b7280",
+    textAlign: "center",
+    maxWidth: 280,
   },
-  fullScreenStatusTitle: {
-    fontSize: 32,
-    fontWeight: "800",
-    color: "#ffffff",
-    marginTop: 20,
-    marginBottom: 30,
+  successCard: {
+    backgroundColor: "#f3f0ea",
+  },
+  errorCard: {
+    backgroundColor: "#fff5f4",
+  },
+  fullScreenTitle: {
+    color: "#1f2937",
+    fontSize: 24,
+    fontWeight: "700",
+    marginTop: 18,
+    marginBottom: 10,
     textAlign: "center",
   },
-  successDetailsCard: {
-    backgroundColor: "rgba(2, 6, 23, 0.4)",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.1)",
-    borderRadius: 24,
-    padding: 24,
+  fullScreenSubtitle: {
+    color: "#6b7280",
+    fontSize: 18,
+    lineHeight: 28,
+    textAlign: "center",
+    marginBottom: 28,
+    maxWidth: 340,
+  },
+  errorText: {
+    color: "#b42318",
+    fontSize: 20,
+    lineHeight: 30,
+    marginTop: 12,
+    textAlign: "center",
+    maxWidth: 340,
+  },
+  detailsWrap: {
     width: "100%",
-    marginBottom: 40,
+    maxWidth: 360,
+    alignItems: "center",
+  },
+  detailItem: {
+    width: "100%",
+    backgroundColor: "#fffdf9",
+    borderWidth: 1,
+    borderColor: "#ddd6cb",
+    borderRadius: 22,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    marginTop: 12,
   },
   detailLabel: {
-    color: "#94a3b8",
-    fontSize: 12,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 6,
-  },
-  detailValBig: {
-    color: "#ffffff",
-    fontSize: 22,
-    fontWeight: "700",
-  },
-  detailValBold: {
-    color: "#ffffff",
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  detailValSmall: {
-    color: "#f1f5f9",
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  detailRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  detailCol: {
-    flex: 1,
-  },
-  detailDivider: {
-    height: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    marginVertical: 16,
-  },
-  nextPassengerBtn: {
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
-    paddingVertical: 18,
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  nextPassengerBtnText: {
-    color: "#065f46",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  errorDetailsCard: {
-    backgroundColor: "rgba(2, 6, 23, 0.4)",
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.1)",
-    borderRadius: 24,
-    padding: 24,
-    width: "100%",
-    marginBottom: 40,
-    alignItems: "center",
-  },
-  errorTextLabel: {
-    color: "#f87171",
-    fontSize: 12,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: 8,
-  },
-  errorTextValue: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "500",
-    textAlign: "center",
-    lineHeight: 22,
-  },
-  retryBtn: {
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
-    paddingVertical: 18,
-    width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
-  },
-  retryBtnText: {
-    color: "#991b1b",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  cancelErrorBtn: {
-    paddingVertical: 12,
-  },
-  cancelErrorBtnText: {
-    color: "#f8fafc",
+    color: "#6b7280",
     fontSize: 14,
     fontWeight: "600",
+    marginBottom: 8,
+    textAlign: "center",
   },
-  hintContainer: {
+  detailValue: {
+    color: "#1f2937",
+    fontSize: 28,
+    fontWeight: "700",
+    textAlign: "center",
+  },
+  demoButton: {
+    position: "absolute",
+    right: 20,
+    bottom: 24,
     flexDirection: "row",
-    alignItems: "flex-start",
-    backgroundColor: "rgba(255, 255, 255, 0.05)",
-    padding: 12,
-    borderRadius: 12,
+    alignItems: "center",
+    backgroundColor: "#10b981",
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: "#7c6f64",
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    elevation: 4,
   },
-  hintIcon: {
-    marginTop: 2,
-    marginRight: 8,
-  },
-  hintText: {
-    color: "#cbd5e1",
-    fontSize: 12,
-    lineHeight: 18,
-    flex: 1,
+  demoButtonText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "700",
+    marginLeft: 6,
   },
 });

@@ -9,8 +9,8 @@ export default function HomeLayout() {
         screenOptions={{
           headerShown: false,
           tabBarStyle: {
-            backgroundColor: "#0f172a",
-            borderTopColor: "#1e293b",
+            backgroundColor: "#f3f0ea",
+            borderTopColor: "#e4ddd3",
             height: 64,
             paddingBottom: 10,
             paddingTop: 8,
@@ -48,12 +48,6 @@ export default function HomeLayout() {
             tabBarIcon: ({ color, focused }) => (
               <Ionicons name={focused ? "settings" : "settings-outline"} size={22} color={color} />
             ),
-          }}
-        />
-        <Tabs.Screen
-          name="setup"
-          options={{
-            href: null,
           }}
         />
       </Tabs>

@@ -1,6 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, StyleSheet } from "react-native";
 
 interface MinimalHeaderProps {
   routeName?: string;
@@ -9,19 +8,12 @@ interface MinimalHeaderProps {
   isSharingLocation: boolean;
 }
 
-export default function MinimalHeader({
-  routeName,
-  routeNo,
-  busName,
-  isSharingLocation,
-}: MinimalHeaderProps) {
+export default function MinimalHeader({ routeName, routeNo, busName, isSharingLocation }: MinimalHeaderProps) {
   return (
     <View style={styles.minimalHeader}>
       <View style={styles.minimalInfo}>
-        <Text style={styles.minimalRouteText}>
-          {routeNo ? `Route ${routeNo}` : routeName || "Route"}
-        </Text>
-        <Text style={styles.minimalBusText}>{busName || "Bus"}</Text>
+        <Text style={styles.minimalRouteText}>{`${routeNo}: ${routeName}`}</Text>
+        <Text style={styles.minimalBusText}>{busName || "Not assigned"}</Text>
       </View>
 
       <View style={styles.statusBadges}>
@@ -49,22 +41,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#1e293b",
-    backgroundColor: "#020617",
+    borderBottomColor: "#e4ddd3",
+    backgroundColor: "#f3f0ea",
   },
   minimalInfo: {
     flex: 1,
-    marginLeft: 0,
   },
   minimalRouteText: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#ffffff",
+    color: "#1f2937",
   },
   minimalBusText: {
     fontSize: 12,
-    color: "#94a3b8",
+    color: "#6b7280",
     marginTop: 2,
+    textTransform: "capitalize",
   },
   statusBadges: {
     flexDirection: "row",
@@ -83,9 +75,9 @@ const styles = StyleSheet.create({
     borderColor: "rgba(16, 185, 129, 0.3)",
   },
   badgeInactive: {
-    backgroundColor: "rgba(148, 163, 184, 0.15)",
+    backgroundColor: "#f1ede7",
     borderWidth: 1,
-    borderColor: "rgba(148, 163, 184, 0.3)",
+    borderColor: "#d8d0c4",
   },
   badgeDot: {
     width: 6,
@@ -102,6 +94,6 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 10,
     fontWeight: "700",
-    color: "#f8fafc",
+    color: "#334155",
   },
 });

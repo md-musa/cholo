@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { View, StyleSheet } from "react-native";
 import * as Location from "expo-location";
-import { useRouter } from "expo-router";
+import NfcManager, { NfcEvents } from "react-native-nfc-manager";
 
 import apiClient from "@/config/axiosInstance";
 import LoadingScreen from "@/components/UI/LoadingScreen";
@@ -17,82 +17,144 @@ import { ToastUtil } from "@/utils/toastUtil";
 import { ScanState, PaymentResponse } from "./types";
 
 export default function PosHomeScreen() {
-  const router = useRouter();
-
-  // Auth & config state from Redux
   const { route, bus } = useAppSelector((state) => state.auth);
-
-  // Sharing state from Context
   const { isSharingLocation } = useLocationSharingContext();
 
-  // Local state for NFC Scan
   const [scanState, setScanState] = useState<ScanState>("idle");
   const [scanError, setScanError] = useState<string | null>(null);
   const [lastTransaction, setLastTransaction] = useState<PaymentResponse | null>(null);
+  const [nfcSupported, setNfcSupported] = useState<boolean>(false);
+  const [nfcReady, setNfcReady] = useState(false);
 
-  // Redirection: if terminal route & bus are not set up, redirect to setup page
-  useEffect(() => {
-    if (!route || !bus) {
-      router.replace("/home/setup");
-    }
-  }, [route, bus]);
+  const processingRef = useRef(false);
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // NFC Scan process
-  const handleScanCard = async () => {
-    if (!route?._id || !bus?._id) {
-      ToastUtil.error("Select route and bus before scanning.");
-      return;
+  const scheduleReset = useCallback((nextState: ScanState = "scanning") => {
+    if (resetTimerRef.current) {
+      clearTimeout(resetTimerRef.current);
     }
 
-    const permissionGranted = await requestForegroundLocationPermission();
-    if (!permissionGranted) {
-      return;
-    }
+    resetTimerRef.current = setTimeout(() => {
+      setLastTransaction(null);
+      setScanError(null);
+      setScanState(nextState);
+    }, 8000);
+  }, []);
 
-    setScanError(null);
-    setLastTransaction(null);
-    setScanState("scanning");
-
-    try {
-      const uid = "04357972217680";
-
-      if (!uid) {
-        throw new Error("Unable to read card UID.");
+  const processScan = useCallback(
+    async (uid: string) => {
+      if (!route?._id || !bus?._id) {
+        setScanError("No route or bus is assigned to this POS device.");
+        setScanState("error");
+        scheduleReset("idle");
+        return;
       }
 
+      if (processingRef.current) {
+        return;
+      }
+
+      processingRef.current = true;
+
+      const permissionGranted = await requestForegroundLocationPermission();
+      if (!permissionGranted) {
+        processingRef.current = false;
+        return;
+      }
+
+      setScanError(null);
+      setLastTransaction(null);
       setScanState("processing");
 
-      const currentLocation = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
+      try {
+        const currentLocation = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
 
-      const response = await apiClient.post("/trip/tap", {
-        nfcUid: uid,
-        routeId: route._id,
-        busId: bus._id,
-        coords: { lat: currentLocation.coords.longitude, lng: currentLocation.coords.latitude },
-      });
+        const response = await apiClient.post("/trip/tap", {
+          nfcUid: uid,
+          routeId: route._id,
+          busId: bus._id,
+          coords: { lat: currentLocation.coords.longitude, lng: currentLocation.coords.latitude },
+        });
 
-      setLastTransaction(response);
-      setScanState("success");
-      playSound("success").catch(() => undefined);
-      ToastUtil.success("Tap processed successfully.");
-    } catch (error: any) {
-      console.log(JSON.stringify(error));
-      const message =
-        error?.response?.data?.errorMessages?.[0]?.message ||
-        error?.response?.data?.message ||
-        error?.message ||
-        "Transaction failed.";
+        setLastTransaction(response);
+        setScanState("success");
+        playSound("success").catch(() => undefined);
+        scheduleReset(nfcSupported ? "scanning" : "idle");
+      } catch (error: any) {
+        console.log(JSON.stringify(error));
+        const message =
+          error?.response?.data?.errorMessages?.[0]?.message ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Transaction failed.";
 
-      setScanError(message);
-      setScanState("error");
-      playSound("error").catch(() => undefined);
-      ToastUtil.error(message);
-    }
-  };
+        setScanError(message);
+        setScanState("error");
+        playSound("error").catch(() => undefined);
+        ToastUtil.error(message);
+        scheduleReset(nfcSupported ? "scanning" : "idle");
+      } finally {
+        processingRef.current = false;
+      }
+    },
+    [bus, nfcSupported, route, scheduleReset],
+  );
 
-  if (!route || !bus) {
+  useEffect(() => {
+    let mounted = true;
+
+    const setupNfc = async () => {
+      try {
+        const supported = await NfcManager.isSupported();
+        if (!mounted) {
+          return;
+        }
+
+        setNfcSupported(supported);
+        if (!supported) {
+          setScanState("idle");
+          setNfcReady(true);
+          return;
+        }
+
+        await NfcManager.start();
+        NfcManager.setEventListener(NfcEvents.DiscoverTag, (tag: any) => {
+          const uid = tag?.id || tag?.uid;
+          if (uid) {
+            processScan(uid);
+          }
+        });
+        await NfcManager.registerTagEvent();
+
+        if (mounted) {
+          setScanState("scanning");
+          setNfcReady(true);
+        }
+      } catch (error) {
+        console.log("NFC init error:", JSON.stringify(error, null, 2));
+        if (mounted) {
+          setNfcSupported(false);
+          setScanState("idle");
+          setNfcReady(true);
+        }
+      }
+    };
+
+    setupNfc();
+
+    return () => {
+      mounted = false;
+      if (resetTimerRef.current) {
+        clearTimeout(resetTimerRef.current);
+      }
+      NfcManager.setEventListener(NfcEvents.DiscoverTag, null);
+      NfcManager.unregisterTagEvent().catch(() => undefined);
+    };
+  }, [processScan]);
+
+  if (!route || !bus || !nfcReady) {
     return <LoadingScreen />;
   }
 
@@ -106,11 +168,11 @@ export default function PosHomeScreen() {
           isSharingLocation={isSharingLocation}
         />
         <NfcScanner
+          nfcSupported={nfcSupported}
           scanState={scanState}
           scanError={scanError}
           lastTransaction={lastTransaction}
-          onScanCard={handleScanCard}
-          onReset={() => setScanState("idle")}
+          onDemoScan={() => processScan("04357972217680")}
         />
       </View>
     </SafeAreaView>
@@ -120,9 +182,10 @@ export default function PosHomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#020617",
+    backgroundColor: "#f3f0ea",
   },
   scanContainer: {
     flex: 1,
+    backgroundColor: "#f3f0ea",
   },
 });

@@ -7,6 +7,8 @@ import LoadingScreen from "@/components/UI/LoadingScreen";
 import { ASYNC_STORAGE_KEYS, USER_ROLES } from "@/constants";
 import { useAppDispatch } from "@/store/storeConfig";
 import { AuthUser, clearCredentials, setCredentials } from "@/store/features/auth/authSlice";
+import { fetchPosAssignment } from "@/utils/posAssignment";
+import { ToastUtil } from "@/utils/toastUtil";
 
 interface DecodedToken {
   userId: string;
@@ -24,10 +26,6 @@ export default function Index() {
     const initialize = async () => {
       try {
         const token = await AsyncStorage.getItem(ASYNC_STORAGE_KEYS.AUTH_TOKEN);
-        const storedRoute = await AsyncStorage.getItem(ASYNC_STORAGE_KEYS.CURRENT_ROUTE);
-        const route = storedRoute ? JSON.parse(storedRoute) : null;
-        const storedBus = await AsyncStorage.getItem("current_bus");
-        const bus = storedBus ? JSON.parse(storedBus) : null;
 
         if (!token) {
           dispatch(clearCredentials());
@@ -49,20 +47,31 @@ export default function Index() {
           userId: decoded.userId,
           phoneNumber: decoded.phoneNumber,
           role: decoded.role,
+          name: null,
+          email: null,
         };
+        const assignment = await fetchPosAssignment(decoded.userId);
+
+        if (!assignment.route || !assignment.bus) {
+          await AsyncStorage.multiRemove([ASYNC_STORAGE_KEYS.AUTH_TOKEN, ASYNC_STORAGE_KEYS.CURRENT_ROUTE, "current_bus"]);
+          dispatch(clearCredentials());
+          ToastUtil.error("No route or bus is assigned to this POS device.");
+          router.replace("/login");
+          return;
+        }
 
         dispatch(
           setCredentials({
             user,
-            route,
-            bus,
+            route: assignment.route,
+            bus: assignment.bus,
             accessToken: token,
           })
         );
 
         router.replace("/home");
       } catch {
-        await AsyncStorage.multiRemove([ASYNC_STORAGE_KEYS.AUTH_TOKEN, ASYNC_STORAGE_KEYS.CURRENT_ROUTE]);
+        await AsyncStorage.multiRemove([ASYNC_STORAGE_KEYS.AUTH_TOKEN, ASYNC_STORAGE_KEYS.CURRENT_ROUTE, "current_bus"]);
         dispatch(clearCredentials());
         router.replace("/login");
       } finally {

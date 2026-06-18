@@ -39,7 +39,7 @@ export default function SettingsScreen() {
     }
   };
 
-  const getInitials = (name?: string) => {
+  const getInitials = (name?: string | null) => {
     if (!name) return "OP";
     return name
       .split(" ")
@@ -105,33 +105,33 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#020617",
+    backgroundColor: "#f3f0ea",
   },
   container: {
     flex: 1,
     padding: 24,
     justifyContent: "space-between",
-    backgroundColor: "#090d16",
+    backgroundColor: "#f3f0ea",
   },
   header: {
     marginTop: 16,
     marginBottom: 32,
   },
   headerTitle: {
-    color: "#ffffff",
+    color: "#1f2937",
     fontSize: 28,
     fontWeight: "700",
   },
   headerSubtitle: {
-    color: "#64748b",
+    color: "#6b7280",
     fontSize: 14,
     marginTop: 6,
   },
   profileCard: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#faf7f2",
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#e7e0d6",
     padding: 32,
     alignItems: "center",
     width: "100%",
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 4,
-    borderColor: "#1e293b",
+    borderColor: "#f3f0ea",
   },
   avatarText: {
     color: "#ffffff",
@@ -172,29 +172,29 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   profileName: {
-    color: "#ffffff",
+    color: "#1f2937",
     fontSize: 22,
     fontWeight: "700",
     textAlign: "center",
   },
   profileEmail: {
-    color: "#94a3b8",
+    color: "#6b7280",
     fontSize: 14,
     marginTop: 6,
     textAlign: "center",
   },
   consoleCard: {
-    backgroundColor: "#0f172a",
+    backgroundColor: "#faf7f2",
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#e7e0d6",
     padding: 24,
     width: "100%",
     flex: 1,
     marginVertical: 24,
   },
   consoleCardTitle: {
-    color: "#ffffff",
+    color: "#1f2937",
     fontSize: 16,
     fontWeight: "700",
     marginBottom: 16,

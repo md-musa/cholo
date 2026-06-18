@@ -1,8 +1,6 @@
-import { useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 
 import LoadingScreen from "@/components/UI/LoadingScreen";
 import MinimalHeader from "@/components/UI/MinimalHeader";
@@ -11,25 +9,9 @@ import { useAppSelector } from "@/store/storeConfig";
 import { useLocationSharingContext } from "./LocationContext";
 
 export default function LocationSharingScreen() {
-  const router = useRouter();
-
-  // Auth & config state from Redux
   const { route, bus } = useAppSelector((state) => state.auth);
-  //console.log(route, bus);
-
-  // Location sharing state from Context
-  const {
-    isSharingLocation,
-    lastLocationText,
-    handleLocationToggle,
-  } = useLocationSharingContext();
-
-  // Redirection: if terminal route & bus are not set up, redirect to setup page
-  useEffect(() => {
-    if (!route || !bus) {
-      router.replace("/home/setup");
-    }
-  }, [route, bus]);
+  console.log(route?.routeName);
+  const { isSharingLocation, lastLocationText, handleLocationToggle } = useLocationSharingContext();
 
   if (!route || !bus) {
     return <LoadingScreen />;
@@ -90,10 +72,7 @@ export default function LocationSharingScreen() {
           {/* Action Toggle Button */}
           <TouchableOpacity
             onPress={() => handleLocationToggle(route._id, bus)}
-            style={[
-              styles.toggleBtn,
-              isSharingLocation ? styles.btnStop : styles.btnStart,
-            ]}
+            style={[styles.toggleBtn, isSharingLocation ? styles.btnStop : styles.btnStart]}
           >
             <View style={styles.btnContent}>
               <Ionicons
@@ -101,9 +80,7 @@ export default function LocationSharingScreen() {
                 size={24}
                 color="white"
               />
-              <Text style={styles.toggleBtnText}>
-                {isSharingLocation ? "Stop Broadcast" : "Start Broadcasting"}
-              </Text>
+              <Text style={styles.toggleBtnText}>{isSharingLocation ? "Stop Broadcast" : "Start Broadcasting"}</Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -115,17 +92,18 @@ export default function LocationSharingScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#020617",
+    backgroundColor: "#f3f0ea",
   },
   mainContainer: {
     flex: 1,
+    backgroundColor: "#f3f0ea",
   },
   content: {
     flex: 1,
     padding: 24,
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#090d16",
+    backgroundColor: "#f3f0ea",
   },
   radarContainer: {
     flex: 1,
@@ -141,23 +119,23 @@ const styles = StyleSheet.create({
   outerCircle: {
     width: 220,
     height: 220,
-    backgroundColor: "rgba(100, 116, 139, 0.03)",
+    backgroundColor: "#f7f3ed",
     borderWidth: 1,
-    borderColor: "rgba(100, 116, 139, 0.05)",
+    borderColor: "#e7e0d6",
   },
   midCircle: {
     width: 160,
     height: 160,
-    backgroundColor: "rgba(100, 116, 139, 0.05)",
+    backgroundColor: "#faf7f2",
     borderWidth: 1,
-    borderColor: "rgba(100, 116, 139, 0.08)",
+    borderColor: "#e1d8cc",
   },
   innerCircle: {
     width: 100,
     height: 100,
-    backgroundColor: "rgba(100, 116, 139, 0.08)",
+    backgroundColor: "#fffdf9",
     borderWidth: 1,
-    borderColor: "rgba(100, 116, 139, 0.15)",
+    borderColor: "#d8d0c4",
   },
   pulseActiveOuter: {
     backgroundColor: "rgba(16, 185, 129, 0.04)",
@@ -173,10 +151,10 @@ const styles = StyleSheet.create({
   },
   statusCard: {
     width: "100%",
-    backgroundColor: "#0f172a",
+    backgroundColor: "#faf7f2",
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: "#1e293b",
+    borderColor: "#e7e0d6",
     padding: 24,
     marginBottom: 24,
   },
@@ -198,19 +176,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#64748b",
   },
   statusTitle: {
-    color: "#f8fafc",
+    color: "#1f2937",
     fontSize: 16,
     fontWeight: "700",
   },
   statusDescription: {
-    color: "#94a3b8",
+    color: "#6b7280",
     fontSize: 13,
     lineHeight: 18,
     marginBottom: 20,
   },
   divider: {
     height: 1,
-    backgroundColor: "#1e293b",
+    backgroundColor: "#e7e0d6",
     marginBottom: 20,
   },
   infoRow: {
@@ -229,7 +207,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   infoValue: {
-    color: "#f8fafc",
+    color: "#1f2937",
     fontSize: 14,
     fontWeight: "600",
     marginTop: 2,
