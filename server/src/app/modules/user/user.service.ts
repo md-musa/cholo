@@ -28,9 +28,23 @@ const getAllPassengers = async () => {
 };
 
 const getPassengerById = async (id: string) => {
-  const result = await PassengerModel.findById(id).populate("route");
+  const result = await PassengerModel.findById(id).populate("route").lean();
   if (!result) throw ApiError.notFound("Passenger not found");
-  return result;
+
+  const card = await CardModel.findOne({ userId: id }).lean();
+
+  return {
+    ...result,
+    card: card
+      ? {
+          _id: card._id,
+          nfcUid: card.nfcUid,
+          balance: card.balance,
+          status: card.status,
+          lastUsedAt: card.lastUsedAt,
+        }
+      : null,
+  };
 };
 
 const updatePassenger = async (id: string, payload: Partial<IPassenger>) => {

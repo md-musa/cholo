@@ -206,6 +206,57 @@ const initRecharge = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
+// POST /card/recharge
+// Simple passenger-side direct recharge for testing
+const rechargeCard = async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?.userId;
+  const { amount } = req.body;
+
+  const rechargeAmount = parseFloat(amount);
+  if (isNaN(rechargeAmount) || rechargeAmount <= 0) {
+    throw ApiError.badRequest("A valid positive amount is required for recharge");
+  }
+
+  const card = await CardModel.findOne({ userId });
+  if (!card) {
+    throw ApiError.notFound("No card found linked to your account");
+  }
+
+  if (card.status !== "active") {
+    throw ApiError.badRequest(`Cannot recharge a card in "${card.status}" state`);
+  }
+
+  const updatedCard = await CardModel.findByIdAndUpdate(
+    card._id,
+    {
+      $inc: { balance: rechargeAmount },
+    },
+    { new: true }
+  );
+
+  if (!updatedCard) {
+    throw ApiError.notFound("Card not found");
+  }
+
+  await PassengerModel.findByIdAndUpdate(userId, {
+    $inc: { balance: rechargeAmount },
+  });
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Card recharged successfully",
+    data: {
+      _id: updatedCard._id,
+      nfcUid: updatedCard.nfcUid,
+      balance: updatedCard.balance,
+      status: updatedCard.status,
+      lastUsedAt: updatedCard.lastUsedAt,
+      rechargedAmount: rechargeAmount,
+    },
+  });
+};
+
 // GET /card/recharge/mock-gateway
 // Renders the premium glassmorphic checkout UI
 const mockGatewayPage = async (req: Request, res: Response): Promise<void> => {
@@ -537,8 +588,8 @@ export const CardController = {
   getMyCard,
   getCardDetails,
   initRecharge,
+  rechargeCard,
   mockGatewayPage,
   handleWebhook,
   getAllCards,
 };
-

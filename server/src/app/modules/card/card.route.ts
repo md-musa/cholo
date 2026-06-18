@@ -18,6 +18,12 @@ router.post(
   CardController.initRecharge
 );
 
+router.post(
+  "/recharge",
+  auth(USER_ROLES.PASSENGER),
+  CardController.rechargeCard
+);
+
 
 // ADD NEW CARD - ADMIN ONLY
 router.post(
