@@ -72,6 +72,11 @@ const createPOSDevice = async (payload: IPosDevice) => {
   const existingDevice = await POSDeviceModel.findOne({ deviceId: payload.deviceId });
   if (existingDevice) throw ApiError.badRequest("POS Device with this Device ID already exists");
 
+  if (payload.assignedBus) {
+    const busAlreadyAssigned = await POSDeviceModel.findOne({ assignedBus: payload.assignedBus });
+    if (busAlreadyAssigned) throw ApiError.badRequest("This bus is already assigned to another POS device");
+  }
+
   const result = await POSDeviceModel.create(payload);
   return result;
 };
@@ -98,6 +103,14 @@ const updatePOSDevice = async (id: string, payload: Partial<IPosDevice>) => {
   if (payload.deviceId && payload.deviceId !== doc.deviceId) {
     const existingDevice = await POSDeviceModel.findOne({ deviceId: payload.deviceId });
     if (existingDevice) throw ApiError.badRequest("POS Device with this Device ID already exists");
+  }
+
+  if (payload.assignedBus) {
+    const busAlreadyAssigned = await POSDeviceModel.findOne({
+      assignedBus: payload.assignedBus,
+      _id: { $ne: id },
+    });
+    if (busAlreadyAssigned) throw ApiError.badRequest("This bus is already assigned to another POS device");
   }
 
   if (payload.pin) {

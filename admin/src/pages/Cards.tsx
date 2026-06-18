@@ -102,7 +102,20 @@ export function Cards() {
 
       setCards(cardsResult.data || [])
       if (passengersRes.ok && passengersResult.success) {
-        setPassengers(passengersResult.data || [])
+        // /passenger now returns Card objects with populated userId — extract the passenger
+        const rawData: any[] = passengersResult.data || []
+        const passengerList: Passenger[] = rawData
+          .map((item: any) => {
+            // If it's a card object with a populated userId, extract the passenger
+            if (item.userId && typeof item.userId === "object" && item.userId.name) {
+              return item.userId as Passenger
+            }
+            // Otherwise treat it as a plain passenger object (fallback)
+            if (item.name) return item as Passenger
+            return null
+          })
+          .filter(Boolean) as Passenger[]
+        setPassengers(passengerList)
       }
     } catch (err: any) {
       setError(err.message || "Something went wrong while loading data.")

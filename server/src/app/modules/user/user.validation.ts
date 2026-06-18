@@ -18,12 +18,29 @@ const updatePassenger = z.object({
 });
 
 
+const objectIdOrEmpty = z.union([
+  z.string().length(24, "Invalid MongoDB ObjectId"),
+  z.literal(""),
+  z.null()
+]).optional();
+
+const createPOSDevice = z.object({
+  body: z.object({
+    phoneNumber: z.string({ required_error: "Phone number is required" }),
+    pin: z.string({ required_error: "PIN is required" }).min(4, "PIN must be 4–6 digits").max(6, "PIN must be 4–6 digits").regex(/^\d+$/, "PIN must contain only digits"),
+    assignedBus: objectIdOrEmpty,
+    assignedRoute: objectIdOrEmpty,
+    name: z.string().optional(),
+    status: z.enum(["active", "inactive"]).optional(),
+  }),
+});
+
 const updatePOSDevice = z.object({
   body: z.object({
     phoneNumber: z.string().optional(),
     pin: z.string().min(4, "PIN must be 4–6 digits").max(6, "PIN must be 4–6 digits").regex(/^\d+$/, "PIN must contain only digits").optional(),
-    assignedBus: z.string().length(24, "Invalid MongoDB ObjectId").optional(),
-    assignedRoute: z.string().length(24, "Invalid MongoDB ObjectId").optional(),
+    assignedBus: objectIdOrEmpty,
+    assignedRoute: objectIdOrEmpty,
     name: z.string().optional(),
     status: z.enum(["active", "inactive"]).optional(),
   }),
@@ -52,6 +69,7 @@ const updateSuperAdmin = z.object({
 
 export const UserValidation = {
   updatePassenger,
+  createPOSDevice,
   updatePOSDevice,
   updateAdmin,
   updateSuperAdmin,

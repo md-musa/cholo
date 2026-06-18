@@ -61,7 +61,7 @@ export interface POSDevice {
   phoneNumber: string
   status?: "active" | "inactive"
   assignedBus?: string | { _id: string; name: string }
-  assignedRoute?: string
+  assignedRoute?: string | { _id: string; routeName: string; routeNo: string }
   deviceId?: string
 }
 
@@ -118,6 +118,7 @@ export const apiSlice = createApi({
       pin: string
       name?: string
       assignedBus?: string
+      assignedRoute?: string
       status?: string
     }>({
       query: (data) => ({ url: "/users/pos-device", method: "POST", data }),
@@ -125,7 +126,7 @@ export const apiSlice = createApi({
     }),
     updatePOSDevice: builder.mutation<any, {
       id: string
-      data: Partial<{ phoneNumber: string; pin: string; name: string; assignedBus: string; status: string }>
+      data: Partial<{ phoneNumber: string; pin: string; name: string; assignedBus: string; assignedRoute: string; status: string }>
     }>({
       query: ({ id, data }) => ({ url: `/users/pos-device/${id}`, method: "PATCH", data }),
       invalidatesTags: ["POSDevices"],
@@ -152,3 +153,4 @@ export const {
   useUpdatePOSDeviceMutation,
   useDeletePOSDeviceMutation,
 } = apiSlice
+

@@ -5,8 +5,10 @@ import {
   useUpdatePOSDeviceMutation,
   useDeletePOSDeviceMutation,
   useGetBusesQuery,
+  useGetRoutesQuery,
   type POSDevice,
   type Bus,
+  type Route,
 } from "@/store/apiSlice"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -70,27 +72,40 @@ function resolveAssignedBus(device: POSDevice, buses: Bus[]): string {
   return buses.find((b) => b._id === id)?.name ?? "Unassigned"
 }
 
+function resolveAssignedRoute(device: POSDevice, routes: Route[]): string {
+  if (!device.assignedRoute) return "—"
+  if (typeof device.assignedRoute === "object" && device.assignedRoute.routeName) {
+    return `${device.assignedRoute.routeNo} – ${device.assignedRoute.routeName}`
+  }
+  const id = typeof device.assignedRoute === "string" ? device.assignedRoute : device.assignedRoute._id
+  const r = routes.find((r) => r._id === id)
+  return r ? `${r.routeNo} – ${r.routeName}` : "—"
+}
+
 // ─── Form state ───────────────────────────────────────────────────────────────
 interface POSForm {
   name: string
   phoneNumber: string
   pin: string
   assignedBus: string
+  assignedRoute: string
   status: "active" | "inactive" | ""
 }
 
-const emptyForm: POSForm = { name: "", phoneNumber: "", pin: "", assignedBus: "", status: "" }
+const emptyForm: POSForm = { name: "", phoneNumber: "", pin: "", assignedBus: "", assignedRoute: "", status: "" }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export function POSDevices() {
   const { data: devicesRes, isLoading } = useGetPOSDevicesQuery()
   const { data: busesRes } = useGetBusesQuery()
+  const { data: routesRes } = useGetRoutesQuery()
   const [createDevice, { isLoading: isCreating }] = useCreatePOSDeviceMutation()
   const [updateDevice, { isLoading: isUpdating }] = useUpdatePOSDeviceMutation()
   const [deleteDevice, { isLoading: isDeleting }] = useDeletePOSDeviceMutation()
 
   const devices: POSDevice[] = devicesRes?.data ?? []
   const buses: Bus[] = busesRes?.data ?? []
+  const routes: Route[] = routesRes?.data ?? []
   const { toasts, toast, dismiss } = useToast()
 
   const [addOpen, setAddOpen] = useState(false)
@@ -99,6 +114,23 @@ export function POSDevices() {
   const [form, setForm] = useState<POSForm>(emptyForm)
   const [formError, setFormError] = useState<string | null>(null)
   const [showPin, setShowPin] = useState(false)
+
+  // Buses already taken by OTHER devices — computed after hooks so editTarget is defined
+  const takenBusIds = new Set(
+    devices
+      .filter((d) => {
+        if (!d.assignedBus) return false
+        const busId = typeof d.assignedBus === "object" ? d.assignedBus._id : d.assignedBus
+        // Exclude the device currently being edited so its own bus stays selectable
+        if (editTarget) {
+          const editBusId =
+            typeof editTarget.assignedBus === "object" ? editTarget.assignedBus?._id : editTarget.assignedBus
+          if (busId === editBusId) return false
+        }
+        return true
+      })
+      .map((d) => (typeof d.assignedBus === "object" ? d.assignedBus!._id : d.assignedBus as string))
+  )
 
   const isEdit = !!editTarget
 
@@ -114,11 +146,16 @@ export function POSDevices() {
       typeof device.assignedBus === "object" && device.assignedBus
         ? device.assignedBus._id
         : (device.assignedBus as string) ?? ""
+    const routeId =
+      typeof device.assignedRoute === "object" && device.assignedRoute
+        ? device.assignedRoute._id
+        : (device.assignedRoute as string) ?? ""
     setForm({
       name: device.name ?? "",
       phoneNumber: device.phoneNumber,
       pin: "",
       assignedBus: busId,
+      assignedRoute: routeId,
       status: device.status ?? "",
     })
     setFormError(null)
@@ -150,6 +187,7 @@ export function POSDevices() {
       status: form.status || "active",
     }
     if (form.assignedBus) payload.assignedBus = form.assignedBus
+    if (form.assignedRoute) payload.assignedRoute = form.assignedRoute
 
     try {
       await createDevice(payload as Parameters<typeof createDevice>[0]).unwrap()
@@ -175,6 +213,9 @@ export function POSDevices() {
     }
     if (form.pin) payload.pin = form.pin
     if (form.assignedBus) payload.assignedBus = form.assignedBus
+    else payload.assignedBus = null
+    if (form.assignedRoute) payload.assignedRoute = form.assignedRoute
+    else payload.assignedRoute = null
     if (form.status) payload.status = form.status
 
     try {
@@ -256,9 +297,32 @@ export function POSDevices() {
           <SelectTrigger className="w-full h-9"><SelectValue placeholder="Unassigned" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="none">Unassigned</SelectItem>
-            {buses.map((bus) => (
-              <SelectItem key={bus._id} value={bus._id}>
-                <span className="capitalize">{bus.name}</span>
+            {buses.map((bus) => {
+              const isTaken = takenBusIds.has(bus._id)
+              return (
+                <SelectItem key={bus._id} value={bus._id} disabled={isTaken}>
+                  <span className="capitalize">{bus.name}</span>
+                  {isTaken && <span className="ml-2 text-[10px] text-red-400 font-medium">(taken)</span>}
+                </SelectItem>
+              )
+            })}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Assigned Route */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+          Assign to Route <span className="text-xs font-normal text-neutral-400">(optional)</span>
+        </label>
+        <Select value={form.assignedRoute || "none"}
+          onValueChange={(v) => setForm((f) => ({ ...f, assignedRoute: v === "none" ? "" : v }))}>
+          <SelectTrigger className="w-full h-9"><SelectValue placeholder="No route" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">No route</SelectItem>
+            {routes.map((route) => (
+              <SelectItem key={route._id} value={route._id}>
+                <span>{route.routeNo} – {route.routeName}</span>
               </SelectItem>
             ))}
           </SelectContent>
@@ -311,18 +375,19 @@ export function POSDevices() {
               <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300 pl-5">Name</TableHead>
               <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300">Phone</TableHead>
               <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300">Assigned Bus</TableHead>
+              <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300">Assigned Route</TableHead>
               <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300">Status</TableHead>
               <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300 text-right pr-5">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-16">
+              <TableRow><TableCell colSpan={6} className="text-center py-16">
                 <Loader2 className="h-5 w-5 animate-spin text-neutral-400 mx-auto mb-2" />
                 <span className="text-xs text-neutral-400">Loading devices…</span>
               </TableCell></TableRow>
             ) : devices.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center py-16">
+              <TableRow><TableCell colSpan={6} className="text-center py-16">
                 <Smartphone className="h-8 w-8 text-neutral-200 dark:text-neutral-700 mx-auto mb-2" />
                 <p className="text-sm text-neutral-400">No POS devices registered yet.</p>
                 <p className="text-xs text-neutral-300 dark:text-neutral-600 mt-1">Click "Add Device" to get started.</p>
@@ -339,6 +404,9 @@ export function POSDevices() {
                   </TableCell>
                   <TableCell className="text-neutral-500 dark:text-neutral-400 capitalize text-sm">
                     {resolveAssignedBus(device, buses)}
+                  </TableCell>
+                  <TableCell className="text-neutral-500 dark:text-neutral-400 text-sm">
+                    {resolveAssignedRoute(device, routes)}
                   </TableCell>
                   <TableCell><StatusBadge status={device.status} /></TableCell>
                   <TableCell className="text-right pr-5">

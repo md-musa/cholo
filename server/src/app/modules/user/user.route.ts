@@ -17,6 +17,11 @@ router.delete("/passenger/:id", UserController.deletePassenger);
 
 
 // POS Device Routes
+router.post(
+  "/pos-device",
+  validateRequest(UserValidation.createPOSDevice),
+  UserController.createPOSDevice
+);
 router.get("/pos-device", UserController.getAllPOSDevices);
 router.get("/pos-device/:id", UserController.getPOSDeviceById);
 router.patch(
