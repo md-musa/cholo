@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface MinimalHeaderProps {
   routeName?: string;
@@ -17,7 +18,9 @@ export default function MinimalHeader({
   return (
     <View style={styles.minimalHeader}>
       <View style={styles.minimalInfo}>
-        <Text style={styles.minimalRouteText}>{routeNo ? `Route ${routeNo}` : routeName || "Route"}</Text>
+        <Text style={styles.minimalRouteText}>
+          {routeNo ? `Route ${routeNo}` : routeName || "Route"}
+        </Text>
         <Text style={styles.minimalBusText}>{busName || "Bus"}</Text>
       </View>
 
@@ -46,20 +49,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
-    backgroundColor: "#ffffff",
+    borderBottomColor: "#1e293b",
+    backgroundColor: "#020617",
   },
   minimalInfo: {
     flex: 1,
+    marginLeft: 0,
   },
   minimalRouteText: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#111827",
+    color: "#ffffff",
   },
   minimalBusText: {
     fontSize: 12,
-    color: "#6b7280",
+    color: "#94a3b8",
     marginTop: 2,
   },
   statusBadges: {
@@ -74,14 +78,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   badgeSuccess: {
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "rgba(16, 185, 129, 0.15)",
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "rgba(16, 185, 129, 0.3)",
   },
   badgeInactive: {
-    backgroundColor: "#f9fafb",
+    backgroundColor: "rgba(148, 163, 184, 0.15)",
     borderWidth: 1,
-    borderColor: "#e5e7eb",
+    borderColor: "rgba(148, 163, 184, 0.3)",
   },
   badgeDot: {
     width: 6,
@@ -90,14 +94,14 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
   dotActive: {
-    backgroundColor: "#111827",
+    backgroundColor: "#10b981",
   },
   dotInactive: {
-    backgroundColor: "#9ca3af",
+    backgroundColor: "#94a3b8",
   },
   badgeText: {
     fontSize: 10,
     fontWeight: "700",
-    color: "#111827",
+    color: "#f8fafc",
   },
 });

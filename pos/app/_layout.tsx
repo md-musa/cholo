@@ -1,7 +1,7 @@
 import { Stack } from "expo-router";
 import { Provider } from "react-redux";
-import { StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Toasts } from "@backpackapp-io/react-native-toast";
 
 import { store } from "@/store/storeConfig";
 
@@ -12,10 +12,10 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             headerShown: false,
-            contentStyle: { backgroundColor: "#ffffff" },
+            contentStyle: { backgroundColor: "#f8fafc" },
           }}
         />
-        <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
+        <Toasts />
       </GestureHandlerRootView>
     </Provider>
   );
