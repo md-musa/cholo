@@ -267,7 +267,7 @@ export function Dashboard() {
                 <TableHeader>
                   <TableRow className="bg-neutral-50 dark:bg-neutral-900/50 hover:bg-neutral-50 dark:hover:bg-neutral-900/50">
                     <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300">Passenger</TableHead>
-                    <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300">Route Name</TableHead>
+                    <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300">Route</TableHead>
                     <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300 text-center">Distance</TableHead>
                     <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300 text-center">Fare</TableHead>
                     <TableHead className="font-semibold text-neutral-700 dark:text-neutral-300 text-center">Status</TableHead>

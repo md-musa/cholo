@@ -14,23 +14,19 @@ export const calculateFare = async (
 ): Promise<number> => {
   console.log(startStoppage, endStoppage, routeId);
 
-  const routeStopages = await FareMatrix.findOne({
-    routeId: new mongoose.Types.ObjectId(routeId)
+  const routeFareEntry = await FareMatrix.findOne({
+    routeId: new mongoose.Types.ObjectId(routeId),
+    from: startStoppage,
+    to: endStoppage,
   }).lean();
 
-  console.log("FareMatrix entry:", routeStopages);
+  console.log("FareMatrix entry:", routeFareEntry);
 
-  if (!routeStopages) {
-    throw ApiError.notFound("Fare matrix not found for this route");
-  }
-
-  const fare = routeStopages.fareMatrix?.[startStoppage]?.[endStoppage];
-
-  if (fare === undefined) {
+  if (!routeFareEntry) {
     throw ApiError.notFound(`Fare not defined between "${startStoppage}" and "${endStoppage}" on this route`);
   }
 
-  return fare;
+  return routeFareEntry.fare;
 };
 
 /**

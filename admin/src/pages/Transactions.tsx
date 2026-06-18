@@ -178,11 +178,15 @@ export function Transactions() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
+
                 <TableRow className="bg-neutral-50 dark:bg-neutral-900/60 hover:bg-neutral-50 dark:hover:bg-neutral-900/60">
                   <TableHead className="font-semibold text-neutral-600 dark:text-neutral-300 pl-6">
                     <span className="flex items-center gap-1">
-                      Passenger <ArrowUpDown className="h-3 w-3 opacity-50" />
+                      Phone<ArrowUpDown className="h-3 w-3 opacity-50" />
                     </span>
+                  </TableHead>
+                  <TableHead className="font-semibold text-neutral-600 dark:text-neutral-300">
+                    Passenger
                   </TableHead>
                   <TableHead className="font-semibold text-neutral-600 dark:text-neutral-300">
                     Route
@@ -234,6 +238,11 @@ export function Transactions() {
                       className="hover:bg-neutral-50/60 dark:hover:bg-neutral-800/20 transition-colors"
                     >
                       {/* Passenger phone */}
+                      <TableCell className="pl-6 font-mono text-sm text-neutral-700 dark:text-neutral-300">
+                        {tx.userId?.phoneNumber || "—"}
+                      </TableCell>
+
+                      {/* Passenger name */}
                       <TableCell className="pl-6 font-mono text-sm text-neutral-700 dark:text-neutral-300">
                         {tx.userId?.name || "—"}
                       </TableCell>

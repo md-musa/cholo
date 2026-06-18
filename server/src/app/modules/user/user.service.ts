@@ -3,6 +3,7 @@ import ApiError from "../../../errors/ApiError";
 import config from "../../../config";
 import { PassengerModel, POSDeviceModel, AdminModel, SuperAdminModel } from "../auth/auth.model";
 import { IPassenger, IPosDevice, IAdmin, ISuperAdmin } from "../auth/auth.interface";
+import { CardModel } from "../card/card.model";
 
 // -------------------------------------------------------------------------
 // Passenger CRUD
@@ -19,7 +20,11 @@ const createPassenger = async (payload: IPassenger) => {
 };
 
 const getAllPassengers = async () => {
-  return await PassengerModel.find({}).populate("route");
+  return await CardModel.find({ userId: { $ne: null } })
+    .populate({
+      path: "userId",
+      populate: { path: "route" },
+    });
 };
 
 const getPassengerById = async (id: string) => {
