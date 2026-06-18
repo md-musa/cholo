@@ -3,6 +3,7 @@ import Constants from "expo-constants";
 import { router } from "expo-router";
 
 import { getAccessToken, removeAccessToken } from "@/utils/authUtil";
+import { SERVER_URL } from "./serverUrl.config";
 
 // const SERVER_URL =
 //   process.env.NODE_ENV === "development"
@@ -11,7 +12,7 @@ import { getAccessToken, removeAccessToken } from "@/utils/authUtil";
 
 // console.log(SERVER_URL);
 
-const SERVER_URL = "http://192.168.0.106:4000"
+
 
 const apiClient = axios.create({
   baseURL: `${SERVER_URL}/api/v1`,

@@ -1,10 +1,6 @@
-import Constants from "expo-constants";
 import { io } from "socket.io-client";
+import { SERVER_URL } from "./serverUrl.config";
 
-const SERVER_URL =
-  process.env.NODE_ENV === "development"
-    ? Constants.expoConfig?.extra?.DVELOPMENT_SERVER_URL
-    : Constants.expoConfig?.extra?.PRODUCTION_SERVER_URL;
 
 const socket = io(SERVER_URL, {
   autoConnect: false,
