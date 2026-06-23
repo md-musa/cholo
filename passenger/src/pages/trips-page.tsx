@@ -23,7 +23,7 @@ export function TripsPage() {
     setLoading(true)
     axiosInstance
       .get<ApiResponse<TripItem[]>>(`/trip/history/${user._id}`, {
-        params: { limit: 10, page: 1 },
+        params: { limit: 5, page: 1 },
       })
       .then((response) => {
         setTrips(response.data.data)
@@ -41,7 +41,7 @@ export function TripsPage() {
       <div className="flex-1 overflow-y-auto p-4">
         {error ? <StatusBanner message={error} /> : null}
 
-        <div className="rounded-[28px] border border-[#e2d8cb] bg-[#fffdf9] p-4 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm">
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-slate-900">Last 10 Trips</h2>
             <p className="text-sm text-slate-500">Simple trip history for passenger use.</p>
@@ -53,13 +53,13 @@ export function TripsPage() {
               Loading trips
             </div>
           ) : trips.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[#ddd2c3] bg-[#fcfaf6] px-4 py-6 text-center text-sm text-slate-500">
+            <div className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
               No trips found.
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-[#ece4d8]">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
               <table className="w-full text-left text-sm">
-                <thead className="bg-[#f5efe6] text-slate-500">
+                <thead className="bg-slate-50 border-b border-slate-200 text-slate-500">
                   <tr>
                     <th className="px-3 py-3 font-medium">Route</th>
                     <th className="px-3 py-3 font-medium">Distance</th>
@@ -69,7 +69,7 @@ export function TripsPage() {
                 </thead>
                 <tbody>
                   {trips.map((trip) => (
-                    <tr key={trip._id} className="border-t border-[#ece4d8] bg-white">
+                    <tr key={trip._id} className="border-t border-slate-200 bg-white hover:bg-slate-50/50 transition">
                       <td className="px-3 py-3 text-slate-900">
                         {trip.routeId?.routeNo ? `${trip.routeId.routeNo} · ${trip.routeId.routeName}` : trip.routeId?.routeName || "Unknown Route"}
                       </td>
@@ -81,9 +81,8 @@ export function TripsPage() {
                       </td>
                       <td className="px-3 py-3">
                         <span
-                          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${
-                            trip.fareStatus === "deducted" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
-                          }`}
+                          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${trip.fareStatus === "deducted" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+                            }`}
                         >
                           {trip.fareStatus || trip.status}
                         </span>

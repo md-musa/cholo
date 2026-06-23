@@ -20,10 +20,10 @@ const getInitials = (name: string) =>
 
 export function ProfileCard({ user, card, onRecharge, onLogout }: ProfileCardProps) {
   return (
-    <div className="rounded-[28px] border border-[#e2d8cb] bg-[#fffdf9] p-5 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="flex size-14 items-center justify-center rounded-3xl bg-emerald-500 text-lg font-semibold text-white">
+          <div className="flex size-14 items-center justify-center rounded-xl bg-slate-900 text-lg font-semibold text-white shadow-sm">
             {getInitials(user.name)}
           </div>
           <div>
@@ -36,13 +36,13 @@ export function ProfileCard({ user, card, onRecharge, onLogout }: ProfileCardPro
         <button
           type="button"
           onClick={onLogout}
-          className="flex size-10 items-center justify-center rounded-2xl border border-[#e5ddd1] bg-white text-slate-500 transition hover:text-slate-900"
+          className="flex size-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 cursor-pointer"
         >
           <LogOut className="size-4" />
         </button>
       </div>
 
-      <div className="mt-5 rounded-[24px] bg-[#f5efe6] p-4">
+      <div className="mt-5 rounded-xl bg-white border border-slate-200 p-4">
         <div className="flex items-center gap-2 text-sm text-slate-500">
           <Wallet className="size-4" />
           Linked Card Balance
@@ -58,7 +58,7 @@ export function ProfileCard({ user, card, onRecharge, onLogout }: ProfileCardPro
       <Button
         onClick={onRecharge}
         disabled={!card}
-        className="mt-4 h-11 w-full rounded-2xl bg-emerald-500 text-white hover:bg-emerald-600 disabled:bg-slate-300"
+        className="mt-4 h-11 w-full rounded-xl bg-slate-900 text-white hover:bg-slate-800 disabled:bg-slate-200"
       >
         Recharge
       </Button>

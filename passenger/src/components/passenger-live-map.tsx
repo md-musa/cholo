@@ -185,37 +185,36 @@ export function PassengerLiveMap({ routes, buses }: PassengerLiveMapProps) {
   }, [routes])
 
   return (
-    <div className="rounded-[28px] border border-[#e2d8cb] bg-[#fffdf9] p-4 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-2 shadow-sm">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-slate-900">Live Routes</h3>
-          <p className="text-sm text-slate-500">All routes and shared buses in one view.</p>
         </div>
-        <div className="rounded-full bg-[#f3ede4] px-3 py-1 text-xs font-semibold text-slate-600">
+        <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 border border-slate-200/60 shadow-xs">
           {Object.keys(liveBuses).length} active
         </div>
       </div>
 
-      <div className="relative h-[320px] overflow-hidden rounded-[24px] border border-[#e7dfd4]">
+      <div className="relative h-[320px] overflow-hidden rounded-xl border border-slate-200">
         {routes.length === 0 ? (
-          <div className="flex h-full items-center justify-center bg-[#fcfaf6] text-sm text-slate-500">
+          <div className="flex h-full items-center justify-center bg-white text-sm text-slate-500">
             Loading routes...
           </div>
         ) : (
           <>
             {isConnecting ? (
-              <div className="absolute top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full border border-[#e7dfd4] bg-white/90 px-3 py-1.5 text-xs text-slate-500 shadow-sm backdrop-blur-sm">
+              <div className="absolute top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-xs text-slate-500 shadow-sm backdrop-blur-sm">
                 <Loader2 className="size-3.5 animate-spin" />
                 Connecting live buses
               </div>
             ) : null}
 
-            {Object.keys(liveBuses).length === 0 && !isConnecting ? (
-              <div className="absolute top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full border border-[#e7dfd4] bg-white/90 px-3 py-1.5 text-xs text-slate-500 shadow-sm backdrop-blur-sm">
+            {/* {Object.keys(liveBuses).length === 0 && !isConnecting ? (
+              <div className="absolute top-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-xs text-slate-500 shadow-sm backdrop-blur-sm">
                 <MapPinned className="size-3.5" />
                 Waiting for shared bus locations
               </div>
-            ) : null}
+            ) : null} */}
 
             <Map viewport={{ center: [90.4125, 23.8103], zoom: 11 }} className="h-full w-full" theme="light">
               <MapControls showZoom showFullscreen />
@@ -258,7 +257,7 @@ export function PassengerLiveMap({ routes, buses }: PassengerLiveMapProps) {
                     </div>
                   </MarkerContent>
                   <MarkerPopup>
-                    <div className="rounded-xl border border-[#e7dfd4] bg-white px-3 py-2 text-xs text-slate-600 shadow">
+                    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 shadow">
                       <p className="font-semibold text-slate-900">{bus.plateNumber}</p>
                       <p className="mt-1">{bus.routeName}</p>
                     </div>

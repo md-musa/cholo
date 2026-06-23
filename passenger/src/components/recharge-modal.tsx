@@ -39,7 +39,7 @@ export function RechargeModal({ open, loading, onClose, onSubmit }: RechargeModa
 
   return (
     <div className="absolute inset-0 z-30 flex items-end justify-center bg-black/30 p-4 backdrop-blur-[2px]">
-      <div className="w-full rounded-[28px] border border-[#ddd2c3] bg-[#fffdf9] p-5 shadow-xl">
+      <div className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-xl">
         <div className="mb-5 flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-slate-900">Recharge Card</h3>
@@ -48,27 +48,30 @@ export function RechargeModal({ open, loading, onClose, onSubmit }: RechargeModa
           <button
             type="button"
             onClick={onClose}
-            className="flex size-10 items-center justify-center rounded-2xl border border-[#e5ddd1] text-slate-500"
+            className="flex size-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500 cursor-pointer hover:bg-slate-100 transition"
           >
             <X className="size-4" />
           </button>
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
-          <label className="block space-y-2">
-            <span className="text-sm font-medium text-slate-700">Amount</span>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="recharge-amount" className="text-sm font-medium text-slate-700">
+              Amount
+            </label>
             <input
+              id="recharge-amount"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
               inputMode="decimal"
               placeholder="Enter amount"
-              className="h-12 w-full rounded-2xl border border-[#ddd2c3] bg-[#fcfaf6] px-4 text-sm text-slate-900 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-1 focus:ring-slate-900"
             />
-          </label>
+          </div>
 
           {error ? <StatusBanner message={error} /> : null}
 
-          <Button className="h-11 w-full rounded-2xl bg-emerald-500 text-white hover:bg-emerald-600" disabled={loading}>
+          <Button className="h-11 w-full rounded-xl bg-slate-900 text-white hover:bg-slate-800" disabled={loading}>
             {loading ? <Loader2 className="size-4 animate-spin" /> : null}
             Complete Recharge
           </Button>

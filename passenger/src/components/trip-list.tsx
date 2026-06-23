@@ -6,20 +6,20 @@ type TripListProps = {
 
 export function TripList({ trips }: TripListProps) {
   return (
-    <div className="rounded-[28px] border border-[#e2d8cb] bg-[#fffdf9] p-5 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm">
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-slate-900">Last 5 Trips</h3>
         <p className="text-sm text-slate-500">Recent completed trips from your passenger account.</p>
       </div>
 
       {trips.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[#ddd2c3] bg-[#fcfaf6] px-4 py-6 text-center text-sm text-slate-500">
+        <div className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
           No trip history yet.
         </div>
       ) : (
         <div className="space-y-3">
           {trips.map((trip) => (
-            <div key={trip._id} className="rounded-2xl border border-[#ece4d8] bg-[#fcfaf6] p-4">
+            <div key={trip._id} className="rounded-xl border border-slate-200 bg-white p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-sm font-semibold text-slate-900">
@@ -50,7 +50,7 @@ export function TripList({ trips }: TripListProps) {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-white px-3 py-3">
+    <div className="rounded-xl bg-slate-50 px-3 py-3 border border-slate-200/60 shadow-xs">
       <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-slate-400">{label}</p>
       <p className="mt-1 text-sm font-semibold text-slate-900">{value}</p>
     </div>
