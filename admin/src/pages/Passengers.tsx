@@ -81,6 +81,7 @@ export function Passengers() {
       })
 
       const passengerResult = await passengerRes.json()
+      console.log(passengerResult);
       if (!passengerRes.ok || !passengerResult.success)
         throw new Error(passengerResult.message || "Failed to retrieve passengers list")
 

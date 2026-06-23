@@ -172,7 +172,7 @@ export default function PosHomeScreen() {
           scanState={scanState}
           scanError={scanError}
           lastTransaction={lastTransaction}
-          onDemoScan={() => processScan("04357972217680")}
+          onDemoScan={() => processScan("04357972217681")}
         />
       </View>
     </SafeAreaView>

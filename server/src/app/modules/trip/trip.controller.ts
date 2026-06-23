@@ -11,13 +11,22 @@ import { calculateDistance } from "./trip.util";
 import sendResponse from "../../../shared/sendResponse";
 import ApiError from "../../../errors/ApiError";
 
-// ── Helper: get rate per km (auto-seed default if missing) ──────────────────
-async function getRatePerKm(): Promise<number> {
+// ── Helper: get fare config (auto-seed defaults if missing) ────────────────
+async function getFareConfig(): Promise<{ ratePerKm: number; minFare: number }> {
   let config = await FareConfigModel.findOne().lean();
   if (!config) {
-    config = await FareConfigModel.create({ ratePerKm: 5 });
+    config = await FareConfigModel.create({ ratePerKm: 5, minFare: 10 });
+  } else if (config.minFare === undefined) {
+    config = await FareConfigModel.findOneAndUpdate(
+      {},
+      { $set: { minFare: 10 } },
+      { new: true }
+    ).lean();
   }
-  return config.ratePerKm;
+  return {
+    ratePerKm: config.ratePerKm ?? 5,
+    minFare: config.minFare ?? 10,
+  };
 }
 
 // POST /trip/tap
@@ -88,8 +97,11 @@ const tapCard = async (req: Request, res: Response): Promise<void> => {
       route.routeLine
     );
 
-    const ratePerKm = await getRatePerKm();
-    const fare = Math.round(distance * ratePerKm);
+    const { ratePerKm, minFare } = await getFareConfig();
+    let fare = Math.round(distance * ratePerKm);
+    if (fare < minFare) {
+      fare = minFare;
+    }
 
     const session = await mongoose.startSession();
     session.startTransaction();

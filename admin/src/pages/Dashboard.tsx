@@ -291,7 +291,7 @@ export function Dashboard() {
                           {tx.routeId?.routeName || "N/A"}
                         </TableCell>
                         <TableCell className="text-xs text-center text-neutral-600 dark:text-neutral-300">
-                          {tx.distanceInKm.toFixed(2) + ' km' || "—"}
+                          {tx.distanceInKm?.toFixed(2) + ' km' || "—"}
                         </TableCell>
                         <TableCell className="text-xs text-center text-neutral-600 dark:text-neutral-300">
                           {tx.fare !== null ? `৳${tx.fare}` : "—"}

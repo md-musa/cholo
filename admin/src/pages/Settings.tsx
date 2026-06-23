@@ -62,6 +62,8 @@ export function Settings() {
   // ── Fare Config state ──
   const [ratePerKm, setRatePerKm] = useState<number | "">("")  // current saved value
   const [rateInput, setRateInput] = useState<string>("")        // controlled input
+  const [minFare, setMinFare] = useState<number | "">("")      // current saved minFare value
+  const [minFareInput, setMinFareInput] = useState<string>("")  // controlled minFare input
   const [fareLoading, setFareLoading] = useState(true)
   const [fareSaving, setFareSaving] = useState(false)
 
@@ -103,6 +105,8 @@ export function Settings() {
       if (res.ok && result.success) {
         setRatePerKm(result.data.ratePerKm)
         setRateInput(String(result.data.ratePerKm))
+        setMinFare(result.data.minFare ?? 10)
+        setMinFareInput(String(result.data.minFare ?? 10))
       }
     } catch {
       // silently fail
@@ -113,9 +117,14 @@ export function Settings() {
 
   // ── Save fare config ──
   const handleSaveFare = async () => {
-    const parsed = parseFloat(rateInput)
-    if (isNaN(parsed) || parsed <= 0) {
+    const parsedRate = parseFloat(rateInput)
+    const parsedMinFare = parseFloat(minFareInput)
+    if (isNaN(parsedRate) || parsedRate <= 0) {
       toast("Rate must be a positive number", "error")
+      return
+    }
+    if (isNaN(parsedMinFare) || parsedMinFare < 0) {
+      toast("Minimum fare must be a non-negative number", "error")
       return
     }
     setFareSaving(true)
@@ -127,15 +136,17 @@ export function Settings() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ ratePerKm: parsed }),
+        body: JSON.stringify({ ratePerKm: parsedRate, minFare: parsedMinFare }),
       })
       const result = await res.json()
       if (!res.ok || !result.success) throw new Error(result.message || "Failed to update")
       setRatePerKm(result.data.ratePerKm)
       setRateInput(String(result.data.ratePerKm))
-      toast("Fare rate updated successfully", "success")
+      setMinFare(result.data.minFare)
+      setMinFareInput(String(result.data.minFare))
+      toast("Fare configurations updated successfully", "success")
     } catch (err: any) {
-      toast(err.message || "Failed to update fare rate", "error")
+      toast(err.message || "Failed to update fare configurations", "error")
     } finally {
       setFareSaving(false)
     }
@@ -248,7 +259,7 @@ export function Settings() {
               <CardTitle className="text-base font-semibold">Fare Configuration</CardTitle>
             </div>
             <CardDescription>
-              Set the per-kilometre fare rate charged to passengers on checkout.
+              Set the per-kilometre fare rate and minimum fare charged to passengers on checkout.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -258,7 +269,7 @@ export function Settings() {
                 <Skeleton className="h-9 w-20" />
               </div>
             ) : (
-              <div className="flex items-end gap-3">
+              <div className="flex items-end gap-4 flex-wrap">
                 <div className="space-y-1.5">
                   <label
                     htmlFor="rate-per-km"
@@ -276,14 +287,37 @@ export function Settings() {
                       value={rateInput}
                       onChange={(e) => setRateInput(e.target.value)}
                       disabled={fareSaving}
-                      className="w-32"
+                      className="w-24"
                     />
                     <span className="text-sm text-neutral-400">/km</span>
                   </div>
                 </div>
+
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="min-fare"
+                    className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                  >
+                    Min Fare (৳)
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">৳</span>
+                    <Input
+                      id="min-fare"
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={minFareInput}
+                      onChange={(e) => setMinFareInput(e.target.value)}
+                      disabled={fareSaving}
+                      className="w-24"
+                    />
+                  </div>
+                </div>
+
                 <Button
                   onClick={handleSaveFare}
-                  disabled={fareSaving || rateInput === String(ratePerKm)}
+                  disabled={fareSaving || (rateInput === String(ratePerKm) && minFareInput === String(minFare))}
                   size="sm"
                   className="mb-0.5"
                 >

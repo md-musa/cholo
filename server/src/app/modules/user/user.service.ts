@@ -20,11 +20,37 @@ const createPassenger = async (payload: IPassenger) => {
 };
 
 const getAllPassengers = async () => {
-  return await CardModel.find({ userId: { $ne: null } })
-    .populate({
-      path: "userId",
-      populate: { path: "route" },
-    });
+  const passengers = await PassengerModel.find().populate("route").lean();
+  const cards = await CardModel.find().lean();
+
+  const cardMap = new Map();
+  cards.forEach((card) => {
+    if (card.userId) {
+      cardMap.set(card.userId.toString(), card);
+    }
+  });
+
+  const result = passengers.map((passenger) => {
+    const card = cardMap.get(passenger._id.toString());
+    if (card) {
+      return {
+        ...card,
+        userId: passenger,
+      };
+    } else {
+      return {
+        _id: `mock-card-${passenger._id}`,
+        nfcUid: "",
+        userId: passenger,
+        balance: 0,
+        status: "unissued",
+        issuedAt: null,
+        lastUsedAt: null,
+      };
+    }
+  });
+
+  return result;
 };
 
 const getPassengerById = async (id: string) => {
@@ -37,12 +63,12 @@ const getPassengerById = async (id: string) => {
     ...result,
     card: card
       ? {
-          _id: card._id,
-          nfcUid: card.nfcUid,
-          balance: card.balance,
-          status: card.status,
-          lastUsedAt: card.lastUsedAt,
-        }
+        _id: card._id,
+        nfcUid: card.nfcUid,
+        balance: card.balance,
+        status: card.status,
+        lastUsedAt: card.lastUsedAt,
+      }
       : null,
   };
 };
