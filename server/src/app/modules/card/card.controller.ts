@@ -9,14 +9,12 @@ import ApiError from "../../../errors/ApiError";
 
 const SIGNATURE_SECRET = "tms_secret_salt";
 
-// Helper to compute MD5 signature for SSLCommerz mock validation
+
 const computeSignature = (tranId: string, amount: string): string => {
   return crypto.createHash("md5").update(tranId + amount + SIGNATURE_SECRET).digest("hex");
 };
 
-// POST /card
-// Register new card by nfcUid into system
-// Status starts as "unissued"
+
 const registerCard = async (req: Request, res: Response): Promise<void> => {
   const { nfcUid } = req.body;
 
@@ -24,7 +22,7 @@ const registerCard = async (req: Request, res: Response): Promise<void> => {
     throw ApiError.badRequest("NFC UID is required");
   }
 
-  // Check if card already exists
+
   const existingCard = await CardModel.findOne({ nfcUid });
   if (existingCard) {
     throw ApiError.badRequest("Card with this NFC UID already exists");
@@ -44,9 +42,7 @@ const registerCard = async (req: Request, res: Response): Promise<void> => {
 };
 
 
-// Link card to a userId
-// Set status "active", issuedAt to now, issuedBy to req.user.userId
-// Reject if user already has a card linked
+
 const issueCard = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const { userId } = req.body;
@@ -94,9 +90,7 @@ const issueCard = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
-// PATCH /card/:id/block
-// Set card status to "blocked"
-// Admin only
+
 const blockCard = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
 
@@ -118,10 +112,7 @@ const blockCard = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
-// GET /card/me
-// Return card linked to authenticated passenger
-// Include balance and status
-// Passenger only
+
 const getMyCard = async (req: Request, res: Response): Promise<void> => {
   const userId = req.user?.userId;
 
@@ -144,9 +135,7 @@ const getMyCard = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
-// GET /card/:id
-// Return full card details
-// Admin only
+
 const getCardDetails = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
 
@@ -163,11 +152,7 @@ const getCardDetails = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
-// POST /card/recharge/init
-// Initiate SSLCommerz payment session
-// Accept amount in request body
-// Return SSLCommerz payment URL
-// Passenger only
+
 const initRecharge = async (req: Request, res: Response): Promise<void> => {
   const userId = req.user?.userId;
   const { amount } = req.body;
@@ -186,13 +171,12 @@ const initRecharge = async (req: Request, res: Response): Promise<void> => {
     throw ApiError.badRequest(`Cannot recharge a card in "${card.status}" state`);
   }
 
-  // Generate unique transaction ID: tms_rc_<cardId>_<timestamp>
   const tran_id = `tms_rc_${card._id}_${Date.now()}`;
 
-  // Create verification signature
+
   const verify_sign = computeSignature(tran_id, rechargeAmount.toString());
 
-  // Return the mock gateway page URL
+
   const port = process.env.PORT || 4000;
   const paymentUrl = `http://localhost:${port}/api/v1/cards/recharge/mock-gateway?tran_id=${tran_id}&amount=${rechargeAmount}&nfcUid=${card.nfcUid}&verify_sign=${verify_sign}`;
 
@@ -206,8 +190,7 @@ const initRecharge = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
-// POST /card/recharge
-// Simple passenger-side direct recharge for testing
+
 const rechargeCard = async (req: Request, res: Response): Promise<void> => {
   const userId = req.user?.userId;
   const { amount } = req.body;
@@ -257,8 +240,6 @@ const rechargeCard = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
-// GET /card/recharge/mock-gateway
-// Renders the premium glassmorphic checkout UI
 const mockGatewayPage = async (req: Request, res: Response): Promise<void> => {
   const { tran_id, amount, nfcUid, verify_sign } = req.query;
 
@@ -453,9 +434,7 @@ const mockGatewayPage = async (req: Request, res: Response): Promise<void> => {
   res.send(html);
 };
 
-// POST /card/recharge/webhook
-// Process the recharge transaction
-// Called by SSLCommerz directly (public)
+
 const handleWebhook = async (req: Request, res: Response): Promise<void> => {
   const { status, tran_id, amount, verify_sign } = req.body;
 
@@ -463,7 +442,7 @@ const handleWebhook = async (req: Request, res: Response): Promise<void> => {
     throw ApiError.badRequest("Invalid webhook payload");
   }
 
-  // Validate webhook signature
+
   const computed = computeSignature(tran_id, amount);
   if (computed !== verify_sign) {
     throw ApiError.badRequest("Invalid webhook signature");
@@ -493,7 +472,7 @@ const handleWebhook = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
-  // Parse cardId from tran_id (format: tms_rc_<cardId>_<timestamp>)
+
   const parts = tran_id.split("_");
   if (parts.length < 3 || parts[0] !== "tms" || parts[1] !== "rc") {
     throw ApiError.badRequest("Invalid transaction ID format");
@@ -505,7 +484,7 @@ const handleWebhook = async (req: Request, res: Response): Promise<void> => {
     throw ApiError.badRequest("Invalid amount");
   }
 
-  // Use $inc for balance changes, never $set
+
   const updatedCard = await CardModel.findByIdAndUpdate(
     cardId,
     {
@@ -518,7 +497,7 @@ const handleWebhook = async (req: Request, res: Response): Promise<void> => {
     throw ApiError.notFound("Card not found");
   }
 
-  // Sync balance to passenger model
+
   if (updatedCard.userId) {
     await PassengerModel.findByIdAndUpdate(updatedCard.userId, {
       $inc: { balance: rechargeAmount },

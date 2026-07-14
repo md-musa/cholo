@@ -9,11 +9,9 @@ export function calculateDistance(
   routeLine: number[][]
 ): number {
   const line = turf.lineString(routeLine);
-  const checkinPoint = turf.point(checkinCoords.reverse());
-  const checkoutPoint = turf.point(checkoutCoords.reverse());
+  const checkinPoint = turf.point([checkinCoords[0], checkinCoords[1]]);
+  const checkoutPoint = turf.point([checkoutCoords[0], checkoutCoords[1]]);
 
-  // nearestPointOnLine snaps each point onto the route.
-  // properties.location = cumulative km from route start → snapped point (along the route).
   const snappedCheckin = turf.nearestPointOnLine(line, checkinPoint, { units: "kilometers" });
   const snappedCheckout = turf.nearestPointOnLine(line, checkoutPoint, { units: "kilometers" });
 
@@ -54,7 +52,6 @@ export function findNearestStop(userCoords, routeLine, stopages) {
 
   return nearest;
 }
-
 
 export async function detectNearestStoppage(
   coords: { lat: number; lng: number },

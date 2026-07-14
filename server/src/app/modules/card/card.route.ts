@@ -5,7 +5,7 @@ import { USER_ROLES } from "../../../constants";
 
 const router = express.Router();
 
-// Passenger-only endpoints
+
 router.get(
   "/me",
   auth(USER_ROLES.PASSENGER),
@@ -25,7 +25,7 @@ router.post(
 );
 
 
-// ADD NEW CARD - ADMIN ONLY
+
 router.post(
   "/",
   //auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
@@ -62,7 +62,7 @@ router.get(
   CardController.getCardDetails
 );
 
-// Public payment simulation routes (no authentication required)
+
 router.get("/recharge/mock-gateway", CardController.mockGatewayPage);
 router.post("/recharge/webhook", CardController.handleWebhook);
 

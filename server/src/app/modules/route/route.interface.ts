@@ -1,13 +1,13 @@
 export interface IRoute {
-  routeNo: string; // required
-  routeName: string; // required
-  distance?: number; // optional, in km
-  travelTime?: number; // optional, in minutes
+  routeNo: string;
+  routeName: string;
+  distance?: number;
+  travelTime?: number;
 
-  routeLine: [number, number][]; // optional, [lng, lat]
+  routeLine: [number, number][];
 
   stopages: {
     name: string;
-    coords: [number, number]; // [lng, lat]
+    coords: [number, number];
   }[];
 }

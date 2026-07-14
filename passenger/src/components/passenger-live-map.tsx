@@ -12,8 +12,18 @@ import {
   useMap,
 } from "@/components/ui/map"
 import type { BusItem, LiveBus, RouteItem } from "@/types"
+import { serverURL } from "@/config/axios.config"
 
-const ROUTE_COLORS = ["#2563eb", "#10b981", "#e11d48", "#f97316", "#0f766e", "#7c3aed", "#ca8a04", "#0891b2"]
+const ROUTE_COLORS = [
+  "#2563eb",
+  "#10b981",
+  "#e11d48",
+  "#f97316",
+  "#0f766e",
+  "#7c3aed",
+  "#ca8a04",
+  "#0891b2",
+]
 
 function RouteLines({
   routes,
@@ -128,12 +138,11 @@ export function PassengerLiveMap({ routes, buses }: PassengerLiveMapProps) {
   const routeLookup = useMemo(
     () =>
       Object.fromEntries(routes.map((route) => [route._id, route.routeName])),
-    [routes],
+    [routes]
   )
   const busLookup = useMemo(
-    () =>
-      Object.fromEntries(buses.map((bus) => [bus._id, bus.name])),
-    [buses],
+    () => Object.fromEntries(buses.map((bus) => [bus._id, bus.name])),
+    [buses]
   )
 
   useEffect(() => {
@@ -145,7 +154,7 @@ export function PassengerLiveMap({ routes, buses }: PassengerLiveMapProps) {
   }, [busLookup])
 
   useEffect(() => {
-    const socket = io("http://localhost:4000", {
+    const socket = io(serverURL, {
       transports: ["websocket"],
       reconnectionAttempts: 5,
       reconnectionDelay: 2000,
@@ -155,20 +164,28 @@ export function PassengerLiveMap({ routes, buses }: PassengerLiveMapProps) {
 
     socket.on("connect", () => setIsConnecting(false))
     socket.on("disconnect", () => setIsConnecting(false))
-    socket.on("bus-location-update", (data: { busId: string; routeId: string; latitude: number; longitude: number }) => {
-      setIsConnecting(false)
-      setLiveBuses((current) => ({
-        ...current,
-        [data.busId]: {
-          busId: data.busId,
-          routeId: data.routeId,
-          lat: data.latitude,
-          lng: data.longitude,
-          plateNumber: busLookupRef.current[data.busId] ?? data.busId,
-          routeName: routeLookupRef.current[data.routeId] ?? data.routeId,
-        },
-      }))
-    })
+    socket.on(
+      "bus-location-update",
+      (data: {
+        busId: string
+        routeId: string
+        latitude: number
+        longitude: number
+      }) => {
+        setIsConnecting(false)
+        setLiveBuses((current) => ({
+          ...current,
+          [data.busId]: {
+            busId: data.busId,
+            routeId: data.routeId,
+            lat: data.latitude,
+            lng: data.longitude,
+            plateNumber: busLookupRef.current[data.busId] ?? data.busId,
+            routeName: routeLookupRef.current[data.routeId] ?? data.routeId,
+          },
+        }))
+      }
+    )
 
     return () => {
       socket.disconnect()
@@ -190,7 +207,7 @@ export function PassengerLiveMap({ routes, buses }: PassengerLiveMapProps) {
         <div>
           <h3 className="text-lg font-semibold text-slate-900">Live Routes</h3>
         </div>
-        <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 border border-slate-200/60 shadow-xs">
+        <div className="rounded-full border border-slate-200/60 bg-white px-3 py-1 text-xs font-semibold text-slate-600 shadow-xs">
           {Object.keys(liveBuses).length} active
         </div>
       </div>
@@ -216,13 +233,21 @@ export function PassengerLiveMap({ routes, buses }: PassengerLiveMapProps) {
               </div>
             ) : null} */}
 
-            <Map viewport={{ center: [90.4125, 23.8103], zoom: 11 }} className="h-full w-full" theme="light">
+            <Map
+              viewport={{ center: [90.4125, 23.8103], zoom: 11 }}
+              className="h-full w-full"
+              theme="light"
+            >
               <MapControls showZoom showFullscreen />
               <RouteLines routes={routes} colorMap={routeColors} />
 
               {routes.flatMap((route) =>
                 route.stopages.map((stop, index) => (
-                  <MapMarker key={`${route._id}-${index}`} longitude={stop.coords[0]} latitude={stop.coords[1]}>
+                  <MapMarker
+                    key={`${route._id}-${index}`}
+                    longitude={stop.coords[0]}
+                    latitude={stop.coords[1]}
+                  >
                     <MarkerContent>
                       <div style={{ position: "relative" }}>
                         <div
@@ -243,22 +268,33 @@ export function PassengerLiveMap({ routes, buses }: PassengerLiveMapProps) {
                       </div>
                     </MarkerContent>
                   </MapMarker>
-                )),
+                ))
               )}
 
               {Object.values(liveBuses).map((bus) => (
-                <MapMarker key={bus.busId} longitude={bus.lng} latitude={bus.lat}>
+                <MapMarker
+                  key={bus.busId}
+                  longitude={bus.lng}
+                  latitude={bus.lat}
+                >
                   <MarkerContent>
                     <div style={{ position: "relative" }}>
-                      <BusMarker color={routeColors[bus.routeId] ?? "#2563eb"} />
-                      <MarkerLabel position="bottom" className="rounded bg-slate-900/85 px-2 py-0.5 text-[10px] text-white shadow">
+                      <BusMarker
+                        color={routeColors[bus.routeId] ?? "#2563eb"}
+                      />
+                      <MarkerLabel
+                        position="bottom"
+                        className="rounded bg-slate-900/85 px-2 py-0.5 text-[10px] text-white shadow"
+                      >
                         {bus.plateNumber}
                       </MarkerLabel>
                     </div>
                   </MarkerContent>
                   <MarkerPopup>
                     <div className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600 shadow">
-                      <p className="font-semibold text-slate-900">{bus.plateNumber}</p>
+                      <p className="font-semibold text-slate-900">
+                        {bus.plateNumber}
+                      </p>
                       <p className="mt-1">{bus.routeName}</p>
                     </div>
                   </MarkerPopup>

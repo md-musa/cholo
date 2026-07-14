@@ -4,9 +4,7 @@ import { IPassenger, IPosDevice, IAdmin, ISuperAdmin } from "./auth.interface";
 import config from "../../../config";
 import { USER_ROLES } from "../../../constants";
 
-// ----------------------------------------------------
-// 1. Passenger Schema
-// ----------------------------------------------------
+
 const PassengerSchema = new Schema<IPassenger>(
   {
     name: { type: String, required: true },
@@ -33,9 +31,7 @@ PassengerSchema.pre("save", async function (next) {
   next();
 });
 
-// ----------------------------------------------------
-// 2. POS Device Schema
-// ----------------------------------------------------
+
 const POSDeviceSchema = new Schema<IPosDevice>(
   {
     phoneNumber: { type: String, unique: true, required: true },
@@ -60,9 +56,7 @@ POSDeviceSchema.pre("save", async function (next) {
   next();
 });
 
-// ----------------------------------------------------
-// 3. Admin Schema
-// ----------------------------------------------------
+
 const AdminSchema = new Schema<IAdmin>(
   {
     name: { type: String, required: true },
@@ -84,9 +78,7 @@ AdminSchema.pre("save", async function (next) {
   next();
 });
 
-// ----------------------------------------------------
-// 4. Super Admin Schema
-// ----------------------------------------------------
+
 const SuperAdminSchema = new Schema<ISuperAdmin>(
   {
     name: { type: String, required: true },
@@ -108,7 +100,7 @@ SuperAdminSchema.pre("save", async function (next) {
   next();
 });
 
-// Export Models
+
 export const PassengerModel = mongoose.model<IPassenger>("Passenger", PassengerSchema);
 export const POSDeviceModel = mongoose.model<IPosDevice>("POSDevice", POSDeviceSchema);
 export const AdminModel = mongoose.model<IAdmin>("Admin", AdminSchema);

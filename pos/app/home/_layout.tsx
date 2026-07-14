@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { LocationSharingProvider } from "./LocationContext";
+import { LocationSharingProvider } from "@/contexts/LocationContext";
+
 
 export default function HomeLayout() {
   return (

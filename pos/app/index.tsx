@@ -35,9 +35,13 @@ export default function Index() {
 
         const decoded = jwtDecode<DecodedToken>(token);
         const isExpired = decoded.exp ? decoded.exp * 1000 <= Date.now() : false;
-        console.log("✅ token decodede:", decoded);
+        //console.log("✅ token decodede:", decoded);
         if (isExpired) {
-          await AsyncStorage.multiRemove([ASYNC_STORAGE_KEYS.AUTH_TOKEN, ASYNC_STORAGE_KEYS.CURRENT_ROUTE, "current_bus"]);
+          await AsyncStorage.multiRemove([
+            ASYNC_STORAGE_KEYS.AUTH_TOKEN,
+            ASYNC_STORAGE_KEYS.CURRENT_ROUTE,
+            "current_bus",
+          ]);
           dispatch(clearCredentials());
           router.replace("/login");
           return;
@@ -53,7 +57,11 @@ export default function Index() {
         const assignment = await fetchPosAssignment(decoded.userId);
 
         if (!assignment.route || !assignment.bus) {
-          await AsyncStorage.multiRemove([ASYNC_STORAGE_KEYS.AUTH_TOKEN, ASYNC_STORAGE_KEYS.CURRENT_ROUTE, "current_bus"]);
+          await AsyncStorage.multiRemove([
+            ASYNC_STORAGE_KEYS.AUTH_TOKEN,
+            ASYNC_STORAGE_KEYS.CURRENT_ROUTE,
+            "current_bus",
+          ]);
           dispatch(clearCredentials());
           ToastUtil.error("No route or bus is assigned to this POS device.");
           router.replace("/login");
@@ -66,12 +74,16 @@ export default function Index() {
             route: assignment.route,
             bus: assignment.bus,
             accessToken: token,
-          })
+          }),
         );
 
         router.replace("/home");
       } catch {
-        await AsyncStorage.multiRemove([ASYNC_STORAGE_KEYS.AUTH_TOKEN, ASYNC_STORAGE_KEYS.CURRENT_ROUTE, "current_bus"]);
+        await AsyncStorage.multiRemove([
+          ASYNC_STORAGE_KEYS.AUTH_TOKEN,
+          ASYNC_STORAGE_KEYS.CURRENT_ROUTE,
+          "current_bus",
+        ]);
         dispatch(clearCredentials());
         router.replace("/login");
       } finally {

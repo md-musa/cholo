@@ -3,9 +3,6 @@ import ApiError from "../../../errors/ApiError";
 import { CardModel } from "../card/card.model";
 import { FareMatrix } from "../fareMatrix/fareMatrix.model";
 
-/**
- * Looks up fare matrix for the route and retrieves fare for the stoppage pair.
- */
 
 export const calculateFare = async (
   startStoppage: string,
@@ -29,10 +26,7 @@ export const calculateFare = async (
   return routeFareEntry.fare;
 };
 
-/**
- * Deducts fare from card balance within a session.
- * Rejects if balance would fall below -100.
- */
+
 export const deductFare = async (
   cardId: string,
   fare: number,

@@ -34,7 +34,7 @@ export const fetchPosAssignment = async (userId: string): Promise<AssignmentResp
       return normalizedPassenger;
     }
   } catch (error) {
-    console.log("Passenger assignment lookup failed:", JSON.stringify(error, null, 2));
+    //console.log("Passenger assignment lookup failed:", JSON.stringify(error, null, 2));
   }
 
   const posDeviceResponse = await apiClient.get(`/users/pos-device/${userId}`);

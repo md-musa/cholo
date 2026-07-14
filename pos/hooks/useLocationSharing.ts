@@ -78,13 +78,13 @@ export function useLocationSharing({ user }: UseLocationSharingProps) {
           };
 
           if (!socket.connected) {
-            console.log("SOCKET NOT CONNECTED, CONNECTING...");
+            //console.log("SOCKET NOT CONNECTED, CONNECTING...");
             socket.connect();
           }
 
           socket.emit(SOCKET_EVENTS.BROADCAST_BUS_LOCATION, payload);
 
-          console.log("LOCATION BROADCASTED:", payload);
+          //console.log("LOCATION BROADCASTED:", payload);
           if (mountedRef.current) {
             setLastLocationText(`${location.coords.latitude.toFixed(5)}, ${location.coords.longitude.toFixed(5)}`);
           }

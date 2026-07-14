@@ -5,7 +5,7 @@ import { RouteModel } from "../route/route.model";
 import sendResponse from "../../../shared/sendResponse";
 import ApiError from "../../../errors/ApiError";
 
-// POST /fare-matrix
+
 const createFareMatrix = async (req: Request, res: Response): Promise<void> => {
   const { routeId, from, to, fare } = req.body;
   const updatedBy = req.user?.userId;
@@ -14,13 +14,13 @@ const createFareMatrix = async (req: Request, res: Response): Promise<void> => {
     throw ApiError.badRequest("Stoppage 'from' and 'to' must be different");
   }
 
-  // Check if route exists
+
   const route = await RouteModel.findById(routeId).lean();
   if (!route) {
     throw ApiError.notFound("Route not found");
   }
 
-  // Reject duplicate stoppage pair on the same route (bidirectional check)
+
   const existing = await FareMatrix.findOne({
     routeId,
     $or: [
@@ -49,7 +49,7 @@ const createFareMatrix = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
-// GET /fare-matrix/:routeId
+
 const getFareMatrix = async (req: Request, res: Response): Promise<void> => {
   const { routeId } = req.params;
 
@@ -68,7 +68,7 @@ const getFareMatrix = async (req: Request, res: Response): Promise<void> => {
   const stops = Array.from(stopsSet);
   const matrix: Record<string, Record<string, number | null>> = {};
 
-  // Initialize matrix
+
   stops.forEach((from) => {
     matrix[from] = {};
     stops.forEach((to) => {
@@ -76,7 +76,7 @@ const getFareMatrix = async (req: Request, res: Response): Promise<void> => {
     });
   });
 
-  // Populate matrix entries bidirectionally
+
   entries.forEach((e) => {
     if (matrix[e.from] && matrix[e.to]) {
       matrix[e.from][e.to] = e.fare;
@@ -92,7 +92,7 @@ const getFareMatrix = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
-// PATCH /fare-matrix/:id
+
 const updateFareMatrix = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
   const { fare } = req.body;
@@ -125,7 +125,7 @@ const updateFareMatrix = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
-// DELETE /fare-matrix/:id
+
 const deleteFareMatrix = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
 

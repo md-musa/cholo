@@ -43,8 +43,9 @@ export function TripsPage() {
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm">
           <div className="mb-4">
-            <h2 className="text-lg font-semibold text-slate-900">Last 10 Trips</h2>
-            <p className="text-sm text-slate-500">Simple trip history for passenger use.</p>
+            <h2 className="text-lg font-semibold text-slate-900">
+              Recent Trips
+            </h2>
           </div>
 
           {loading ? (
@@ -59,7 +60,7 @@ export function TripsPage() {
           ) : (
             <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
               <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-500">
+                <thead className="border-b border-slate-200 bg-slate-50 text-slate-500">
                   <tr>
                     <th className="px-3 py-3 font-medium">Route</th>
                     <th className="px-3 py-3 font-medium">Distance</th>
@@ -69,20 +70,32 @@ export function TripsPage() {
                 </thead>
                 <tbody>
                   {trips.map((trip) => (
-                    <tr key={trip._id} className="border-t border-slate-200 bg-white hover:bg-slate-50/50 transition">
+                    <tr
+                      key={trip._id}
+                      className="border-t border-slate-200 bg-white transition hover:bg-slate-50/50"
+                    >
                       <td className="px-3 py-3 text-slate-900">
-                        {trip.routeId?.routeNo ? `${trip.routeId.routeNo} · ${trip.routeId.routeName}` : trip.routeId?.routeName || "Unknown Route"}
+                        {trip.routeId?.routeNo
+                          ? `${trip.routeId.routeNo} · ${trip.routeId.routeName}`
+                          : trip.routeId?.routeName || "Unknown Route"}
                       </td>
                       <td className="px-3 py-3 text-slate-600">
-                        {typeof trip.distanceInKm === "number" ? `${trip.distanceInKm.toFixed(2)} km` : "--"}
+                        {typeof trip.distanceInKm === "number"
+                          ? `${trip.distanceInKm.toFixed(2)} km`
+                          : "--"}
                       </td>
                       <td className="px-3 py-3 text-slate-600">
-                        {typeof trip.fare === "number" ? `${trip.fare} BDT` : "--"}
+                        {typeof trip.fare === "number"
+                          ? `${trip.fare} BDT`
+                          : "--"}
                       </td>
                       <td className="px-3 py-3">
                         <span
-                          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide ${trip.fareStatus === "deducted" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
-                            }`}
+                          className={`rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide uppercase ${
+                            trip.fareStatus === "deducted"
+                              ? "bg-emerald-100 text-emerald-700"
+                              : "bg-amber-100 text-amber-700"
+                          }`}
                         >
                           {trip.fareStatus || trip.status}
                         </span>

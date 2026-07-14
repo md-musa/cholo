@@ -1,17 +1,8 @@
 import axios from "axios";
-import Constants from "expo-constants";
 import { router } from "expo-router";
 
 import { getAccessToken, removeAccessToken } from "@/utils/authUtil";
 import { SERVER_URL } from "./serverUrl.config";
-
-// const SERVER_URL =
-//   process.env.NODE_ENV === "development"
-//     ? Constants.expoConfig?.extra?.DVELOPMENT_SERVER_URL
-//     : Constants.expoConfig?.extra?.PRODUCTION_SERVER_URL;
-
-// console.log(SERVER_URL);
-
 
 
 const apiClient = axios.create({

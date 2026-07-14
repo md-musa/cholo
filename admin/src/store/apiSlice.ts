@@ -2,7 +2,7 @@ import { createApi, type BaseQueryFn } from "@reduxjs/toolkit/query/react"
 import type { AxiosRequestConfig, AxiosError } from "axios"
 import axiosInstance from "@/config/axios.config"
 
-// ─── axiosBaseQuery ──────────────────────────────────────────────────────────
+
 const axiosBaseQuery = (): BaseQueryFn<
   {
     url: string
@@ -29,7 +29,7 @@ const axiosBaseQuery = (): BaseQueryFn<
     }
   }
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+
 export interface Stoppage {
   name: string
   coords: [number, number]
@@ -65,14 +65,14 @@ export interface POSDevice {
   deviceId?: string
 }
 
-// ─── API Slice ───────────────────────────────────────────────────────────────
+
 export const apiSlice = createApi({
   reducerPath: "api",
   baseQuery: axiosBaseQuery(),
   tagTypes: ["Routes", "Buses", "POSDevices"],
   endpoints: (builder) => ({
 
-    // ── Routes ──────────────────────────────────────────────────────────────
+
     getRoutes: builder.query<{ success: boolean; data: Route[] }, void>({
       query: () => ({ url: "/routes" }),
       providesTags: ["Routes"],
@@ -90,7 +90,7 @@ export const apiSlice = createApi({
       invalidatesTags: ["Routes"],
     }),
 
-    // ── Buses ────────────────────────────────────────────────────────────────
+
     getBuses: builder.query<{ success: boolean; data: Bus[] }, void>({
       query: () => ({ url: "/buses" }),
       providesTags: ["Buses"],
@@ -108,7 +108,7 @@ export const apiSlice = createApi({
       invalidatesTags: ["Buses"],
     }),
 
-    // ── POS Devices ──────────────────────────────────────────────────────────
+
     getPOSDevices: builder.query<{ success: boolean; data: POSDevice[] }, void>({
       query: () => ({ url: "/users/pos-device" }),
       providesTags: ["POSDevices"],

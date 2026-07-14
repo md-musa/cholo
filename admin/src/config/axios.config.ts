@@ -1,13 +1,15 @@
 import axios from "axios"
 
-export const BASE_URL = "http://localhost:4000/api/v1"
+
+export const BASE_URL = "https://cholo-production.up.railway.app/api/v1"
+export const serverURL = "https://cholo-production.up.railway.app"
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 15000,
 })
 
-// Request interceptor – attach JWT token from localStorage
+
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token")
@@ -19,7 +21,7 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error),
 )
 
-// Response interceptor – on 401 clear auth and redirect to login
+
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {

@@ -6,11 +6,11 @@ import LoadingScreen from "@/components/UI/LoadingScreen";
 import MinimalHeader from "@/components/UI/MinimalHeader";
 
 import { useAppSelector } from "@/store/storeConfig";
-import { useLocationSharingContext } from "./LocationContext";
+import { useLocationSharingContext } from "@/contexts/LocationContext";
 
 export default function LocationSharingScreen() {
   const { route, bus } = useAppSelector((state) => state.auth);
-  console.log(route?.routeName);
+
   const { isSharingLocation, lastLocationText, handleLocationToggle } = useLocationSharingContext();
 
   if (!route || !bus) {

@@ -78,13 +78,11 @@ const login = async (userInfo: any) => {
   let isCredentialsValid = false;
 
   if (email && password) {
-    // Admin or Super Admin login
     if (role === "super_admin") {
       user = await SuperAdminModel.findOne({ email });
     } else if (role === "admin") {
       user = await AdminModel.findOne({ email });
     } else {
-      // If role not specified, look in Admin first, then SuperAdmin
       user = await AdminModel.findOne({ email });
       if (!user) {
         user = await SuperAdminModel.findOne({ email });
@@ -96,13 +94,12 @@ const login = async (userInfo: any) => {
     if (!isCredentialsValid) throw ApiError.unauthorized("Invalid password");
 
   } else if (phoneNumber && pin) {
-    // Passenger or POS Device login
+
     if (role === "passenger") {
       user = await PassengerModel.findOne({ phoneNumber });
     } else if (role === "pos_device") {
       user = await POSDeviceModel.findOne({ phoneNumber });
     } else {
-      // If role not specified, look in Passenger first, then POSDevice
       user = await PassengerModel.findOne({ phoneNumber });
       if (!user) {
         user = await POSDeviceModel.findOne({ phoneNumber });

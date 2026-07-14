@@ -7,7 +7,7 @@ import { useRouter } from "expo-router";
 import { ASYNC_STORAGE_KEYS } from "@/constants";
 import { clearCredentials } from "@/store/features/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "@/store/storeConfig";
-import { useLocationSharingContext } from "./LocationContext";
+import { useLocationSharingContext } from "@/contexts/LocationContext";
 import { ToastUtil } from "@/utils/toastUtil";
 
 export default function SettingsScreen() {
@@ -22,11 +22,7 @@ export default function SettingsScreen() {
       stopForegroundLocationSharing();
 
       // Clear storage
-      await AsyncStorage.multiRemove([
-        ASYNC_STORAGE_KEYS.AUTH_TOKEN,
-        ASYNC_STORAGE_KEYS.CURRENT_ROUTE,
-        "current_bus",
-      ]);
+      await AsyncStorage.multiRemove([ASYNC_STORAGE_KEYS.AUTH_TOKEN, ASYNC_STORAGE_KEYS.CURRENT_ROUTE, "current_bus"]);
 
       // Clear redux
       dispatch(clearCredentials());
@@ -63,7 +59,6 @@ export default function SettingsScreen() {
         {/* Title Header */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Operator Settings</Text>
-          <Text style={styles.headerSubtitle}>Manage terminal console & operator profile</Text>
         </View>
 
         {/* Profile Card */}
@@ -77,12 +72,11 @@ export default function SettingsScreen() {
             </View>
           </View>
 
-          <Text style={styles.profileName}>{user?.name || "POS Operator"}</Text>
-          <Text style={styles.profileEmail}>{user?.email || "operator@transnova.com"}</Text>
+          <Text style={styles.profileName}>{"POS Operator"}</Text>
         </View>
 
         {/* Console Config Stats */}
-        <View style={styles.consoleCard}>
+        {/* <View style={styles.consoleCard}>
           <Text style={styles.consoleCardTitle}>Terminal Info</Text>
           <View style={styles.statsRow}>
             <Text style={styles.statLabel}>Status</Text>
@@ -90,7 +84,7 @@ export default function SettingsScreen() {
               <Text style={styles.activeBadgeText}>Online</Text>
             </View>
           </View>
-        </View>
+        </View> */}
 
         {/* Log Out Action */}
         <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
@@ -116,6 +110,7 @@ const styles = StyleSheet.create({
   header: {
     marginTop: 16,
     marginBottom: 32,
+    textAlign: "center",
   },
   headerTitle: {
     color: "#1f2937",
@@ -163,7 +158,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 4,
-    marginTop: -12,
+    marginTop: 12,
   },
   badgeText: {
     color: "#10b981",

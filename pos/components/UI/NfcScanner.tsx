@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { ScanState, PaymentResponse } from "../../app/home/types";
+import { ScanState, PaymentResponse } from "../../contexts/types";
 
 interface NfcScannerProps {
   nfcSupported: boolean;

@@ -26,13 +26,13 @@ const main = async () => {
     await mongoose.connect(config.DATABASE_URL as string);
     console.log("✅ Database connected successfully");
 
-    // Start Express server
+
     console.log("Using port:", port);
     expressServer = app.listen(port, () => {
       console.log(`🚀 Server running on port ${port}`);
     });
 
-    // Initialize Socket.IO
+
     io = new SocketIOServer(expressServer, {
       cors: {
         origin: "*",

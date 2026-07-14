@@ -4,11 +4,10 @@ import { FareConfigModel } from "./fareConfig.model";
 import sendResponse from "../../../shared/sendResponse";
 import ApiError from "../../../errors/ApiError";
 
-// GET /fare-config — returns the current per-km rate and min fare
 const getConfig = async (req: Request, res: Response): Promise<void> => {
   let config = await FareConfigModel.findOne().lean();
   if (!config) {
-    // Auto-seed default on first access
+
     config = await FareConfigModel.create({ ratePerKm: 5, minFare: 10 });
   } else if (config.minFare === undefined) {
     config = await FareConfigModel.findOneAndUpdate(
@@ -25,7 +24,7 @@ const getConfig = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
-// PATCH /fare-config — update configurations (upsert)
+
 const updateConfig = async (req: Request, res: Response): Promise<void> => {
   const { ratePerKm, minFare } = req.body;
   const updateData: Record<string, any> = {};

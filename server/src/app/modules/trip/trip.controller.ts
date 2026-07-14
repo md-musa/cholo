@@ -11,7 +11,7 @@ import { calculateDistance } from "./trip.util";
 import sendResponse from "../../../shared/sendResponse";
 import ApiError from "../../../errors/ApiError";
 
-// ── Helper: get fare config (auto-seed defaults if missing) ────────────────
+
 async function getFareConfig(): Promise<{ ratePerKm: number; minFare: number }> {
   let config = await FareConfigModel.findOne().lean();
   if (!config) {
@@ -29,9 +29,9 @@ async function getFareConfig(): Promise<{ ratePerKm: number; minFare: number }> 
   };
 }
 
-// POST /trip/tap
-// Receives: nfcUid, coords { lat, lng }, busId, routeId
+
 const tapCard = async (req: Request, res: Response): Promise<void> => {
+  const requestStartTime = Date.now();
   const { nfcUid, coords, busId, routeId } = req.body;
 
   if (!nfcUid || !coords || !busId || !routeId) {
@@ -40,10 +40,13 @@ const tapCard = async (req: Request, res: Response): Promise<void> => {
     );
   }
 
-  // Find card by nfcUid
   const card = await CardModel.findOne({ nfcUid });
-  if (!card) throw ApiError.notFound("Card not registered");
-  if (!card.userId) throw ApiError.badRequest("Card is not linked to any user");
+  if (!card) {
+    throw ApiError.notFound("Card not registered");
+  }
+  if (!card.userId) {
+    throw ApiError.badRequest("Card is not linked to any user");
+  }
 
   if (card.status === "blocked" || card.status === "expired") {
     throw ApiError.badRequest(`Card is ${card.status}`);
@@ -55,11 +58,14 @@ const tapCard = async (req: Request, res: Response): Promise<void> => {
     throw ApiError.badRequest("Insufficient balance. Please recharge to continue");
   }
 
-  // Check if card has an existing active trip
   const activeTrip = await TripModel.findOne({ cardId: card._id, status: "active" });
 
   if (!activeTrip) {
-    // ── CHECK-IN ────────────────────────────────────────────────────────────
+
+    if (card.balance < 0) {
+      throw ApiError.badRequest(`Insufficient balance (${card.balance}). Please recharge to check-in.`);
+    }
+
     const newTrip = await TripModel.create({
       userId: card.userId,
       cardId: card._id,
@@ -86,37 +92,31 @@ const tapCard = async (req: Request, res: Response): Promise<void> => {
       },
     });
   } else {
-    // ── CHECK-OUT ───────────────────────────────────────────────────────────
-    // Fetch route for distance calculation
+
     const route = await RouteModel.findById(routeId).lean();
-    if (!route) throw ApiError.notFound("Route not found");
+    if (!route) {
+      throw ApiError.notFound("Route not found");
+    }
+
 
     const distance = calculateDistance(
       activeTrip.checkinCoords.coordinates,
       [coords.lng, coords.lat],
       route.routeLine
     );
-
     const { ratePerKm, minFare } = await getFareConfig();
     let fare = Math.round(distance * ratePerKm);
     if (fare < minFare) {
       fare = minFare;
     }
-
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-      let fareStatus: "deducted" | "failed" = "deducted";
+      const fareStatus = "deducted";
       let remainingBalance = card.balance;
 
-      try {
-        remainingBalance = await deductFare(card._id.toString(), fare, session);
-      } catch {
-        fareStatus = "failed";
-        remainingBalance = card.balance;
-      }
-
+      remainingBalance = await deductFare(card._id.toString(), fare, session);
       const updatedTrip = await TripModel.findByIdAndUpdate(
         activeTrip._id,
         {
@@ -134,8 +134,9 @@ const tapCard = async (req: Request, res: Response): Promise<void> => {
         { session, new: true }
       );
 
-      if (!updatedTrip) throw ApiError.internal("Failed to update trip during checkout");
-
+      if (!updatedTrip) {
+        throw ApiError.internal("Failed to update trip during checkout");
+      }
       await session.commitTransaction();
       session.endSession();
 
@@ -162,7 +163,7 @@ const tapCard = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// GET /trip/active/:nfcUid
+
 const getActiveTrip = async (req: Request, res: Response): Promise<void> => {
   const { nfcUid } = req.params;
 
@@ -183,7 +184,7 @@ const getActiveTrip = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
-// GET /trip/history/:userId
+
 const getTripHistory = async (req: Request, res: Response): Promise<void> => {
   const { userId } = req.params;
   const page = parseInt(req.query.page as string) || 1;
@@ -208,7 +209,7 @@ const getTripHistory = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
-// GET /trip/dashboard-start
+
 const getDashboardStats = async (req: Request, res: Response): Promise<void> => {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -244,7 +245,7 @@ const getDashboardStats = async (req: Request, res: Response): Promise<void> => 
   });
 };
 
-// GET /trip/payment-history
+
 const getPaymentHistory = async (req: Request, res: Response): Promise<void> => {
   const { busId } = req.query;
   const filter: Record<string, any> = { status: "completed" };
@@ -264,7 +265,7 @@ const getPaymentHistory = async (req: Request, res: Response): Promise<void> => 
   });
 };
 
-// GET /trip/transactions?search=phoneNumber  (admin panel)
+
 const getTransactions = async (req: Request, res: Response): Promise<void> => {
   const { search } = req.query;
   const filter: Record<string, any> = { status: "completed" };

@@ -5,12 +5,12 @@ const fareConfigSchema = new mongoose.Schema(
     ratePerKm: {
       type: Number,
       required: true,
-      default: 5, // ৳5 per km
+      default: 5,
     },
     minFare: {
       type: Number,
       required: true,
-      default: 10, // ৳10 min fare
+      default: 10,
     },
   },
   { timestamps: true }

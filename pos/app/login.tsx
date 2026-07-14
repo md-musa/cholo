@@ -72,7 +72,7 @@ export default function Login() {
       router.replace("/home");
     } catch (error: any) {
       const message = getErrorMessage(error);
-      console.log("Login error:", JSON.stringify(error, null, 2));
+      //console.log("Login error:", JSON.stringify(error, null, 2));
       setErrorMessage(message);
       ToastUtil.error(message);
     }

@@ -102,6 +102,9 @@ const deletePassenger = async (id: string) => {
   return result;
 };
 
+
+
+
 // -------------------------------------------------------------------------
 // POSDevice CRUD
 // -------------------------------------------------------------------------
@@ -168,6 +171,8 @@ const deletePOSDevice = async (id: string) => {
   return result;
 };
 
+
+
 // -------------------------------------------------------------------------
 // Admin CRUD
 // -------------------------------------------------------------------------
@@ -212,6 +217,8 @@ const deleteAdmin = async (id: string) => {
   if (!result) throw ApiError.notFound("Admin not found");
   return result;
 };
+
+
 
 // -------------------------------------------------------------------------
 // Super Admin CRUD

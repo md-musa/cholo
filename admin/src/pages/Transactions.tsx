@@ -41,19 +41,19 @@ function fareStatusBadge(status: Transaction["fareStatus"]) {
   switch (status) {
     case "deducted":
       return (
-        <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/50 hover:bg-emerald-50">
+        <Badge className="border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400">
           Deducted
         </Badge>
       )
     case "failed":
       return (
-        <Badge className="bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50 hover:bg-red-50">
+        <Badge className="border border-red-200 bg-red-50 text-red-700 hover:bg-red-50 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400">
           Failed
         </Badge>
       )
     default:
       return (
-        <Badge className="bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/50 hover:bg-amber-50">
+        <Badge className="border border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-400">
           Pending
         </Badge>
       )
@@ -80,12 +80,24 @@ function SkeletonRows() {
     <>
       {[...Array(8)].map((_, i) => (
         <TableRow key={i}>
-          <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-          <TableCell><Skeleton className="h-5 w-20 rounded-full" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-36" /></TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-28" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-24" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-24" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-16" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </TableCell>
+          <TableCell>
+            <Skeleton className="h-4 w-36" />
+          </TableCell>
         </TableRow>
       ))}
     </>
@@ -105,11 +117,13 @@ export function Transactions() {
     setError(null)
 
     const token = localStorage.getItem("token")
-    const params = phone.trim() ? `?search=${encodeURIComponent(phone.trim())}` : ""
+    const params = phone.trim()
+      ? `?search=${encodeURIComponent(phone.trim())}`
+      : ""
 
     try {
       const res = await fetch(
-        `http://localhost:4000/api/v1/trip/transactions${params}`,
+        `https://cholo-production.up.railway.app/api/v1/trip/transactions${params}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -141,9 +155,6 @@ export function Transactions() {
           <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50">
             Transactions
           </h1>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400">
-            Browse the 20 most recent fare transactions. Search by passenger phone number.
-          </p>
         </div>
         <div className="flex items-center gap-2 text-xs text-neutral-400">
           <Receipt className="h-4 w-4" />
@@ -153,21 +164,23 @@ export function Transactions() {
 
       {/* ── Search Bar ── */}
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-neutral-400" />
         <Input
           id="transaction-search"
           type="text"
           placeholder="Search by phone number…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 focus-visible:ring-1 focus-visible:ring-neutral-400"
+          className="border-neutral-200 bg-white pl-9 focus-visible:ring-1 focus-visible:ring-neutral-400 dark:border-neutral-800 dark:bg-neutral-900"
         />
       </div>
 
       {/* ── Table Card ── */}
-      <Card className="border border-neutral-200 dark:border-neutral-800 shadow-sm bg-white dark:bg-neutral-900">
+      <Card className="border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold">Fare Transactions</CardTitle>
+          <CardTitle className="text-base font-semibold">
+            Fare Transactions
+          </CardTitle>
           <CardDescription>
             {search
               ? `Showing results for "${search}"`
@@ -178,11 +191,11 @@ export function Transactions() {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-
-                <TableRow className="bg-neutral-50 dark:bg-neutral-900/60 hover:bg-neutral-50 dark:hover:bg-neutral-900/60">
-                  <TableHead className="font-semibold text-neutral-600 dark:text-neutral-300 pl-6">
+                <TableRow className="bg-neutral-50 hover:bg-neutral-50 dark:bg-neutral-900/60 dark:hover:bg-neutral-900/60">
+                  <TableHead className="pl-6 font-semibold text-neutral-600 dark:text-neutral-300">
                     <span className="flex items-center gap-1">
-                      Phone<ArrowUpDown className="h-3 w-3 opacity-50" />
+                      Phone
+                      <ArrowUpDown className="h-3 w-3 opacity-50" />
                     </span>
                   </TableHead>
                   <TableHead className="font-semibold text-neutral-600 dark:text-neutral-300">
@@ -194,13 +207,13 @@ export function Transactions() {
                   <TableHead className="font-semibold text-neutral-600 dark:text-neutral-300">
                     Traveled Distance
                   </TableHead>
-                  <TableHead className="font-semibold text-neutral-600 dark:text-neutral-300 text-right">
+                  <TableHead className="text-right font-semibold text-neutral-600 dark:text-neutral-300">
                     Fare (৳)
                   </TableHead>
-                  <TableHead className="font-semibold text-neutral-600 dark:text-neutral-300 text-center">
+                  <TableHead className="text-center font-semibold text-neutral-600 dark:text-neutral-300">
                     Status
                   </TableHead>
-                  <TableHead className="font-semibold text-neutral-600 dark:text-neutral-300 pr-6">
+                  <TableHead className="pr-6 font-semibold text-neutral-600 dark:text-neutral-300">
                     Date & Time
                   </TableHead>
                 </TableRow>
@@ -222,10 +235,13 @@ export function Transactions() {
                     <TableCell colSpan={6} className="h-48 text-center">
                       <div className="flex flex-col items-center gap-2 text-neutral-400">
                         <Receipt className="h-8 w-8 opacity-30" />
-                        <p className="text-sm font-medium">No transactions found</p>
+                        <p className="text-sm font-medium">
+                          No transactions found
+                        </p>
                         {search && (
                           <p className="text-xs">
-                            No results for &ldquo;{search}&rdquo;. Try a different phone number.
+                            No results for &ldquo;{search}&rdquo;. Try a
+                            different phone number.
                           </p>
                         )}
                       </div>
@@ -235,7 +251,7 @@ export function Transactions() {
                   transactions.map((tx) => (
                     <TableRow
                       key={tx._id}
-                      className="hover:bg-neutral-50/60 dark:hover:bg-neutral-800/20 transition-colors"
+                      className="transition-colors hover:bg-neutral-50/60 dark:hover:bg-neutral-800/20"
                     >
                       {/* Passenger phone */}
                       <TableCell className="pl-6 font-mono text-sm text-neutral-700 dark:text-neutral-300">
@@ -248,17 +264,29 @@ export function Transactions() {
                       </TableCell>
 
                       {/* Start stop */}
-                      <TableCell className="text-sm text-neutral-600 dark:text-neutral-400 max-w-[140px] truncate" title={tx.routeId?.routeName || "—"}>
+                      <TableCell
+                        className="max-w-[140px] truncate text-sm text-neutral-600 dark:text-neutral-400"
+                        title={tx.routeId?.routeName || "—"}
+                      >
                         {tx.routeId?.routeName || "—"}
                       </TableCell>
 
                       {/* End stop */}
-                      <TableCell className="text-sm text-neutral-600 dark:text-neutral-400 max-w-[140px] truncate" title={tx.distanceInKm ? `${tx.distanceInKm.toFixed(2)} km` : "—"}>
-                        {tx.distanceInKm ? `${tx.distanceInKm.toFixed(2)} km` : "—"}
+                      <TableCell
+                        className="max-w-[140px] truncate text-sm text-neutral-600 dark:text-neutral-400"
+                        title={
+                          tx.distanceInKm
+                            ? `${tx.distanceInKm.toFixed(2)} km`
+                            : "—"
+                        }
+                      >
+                        {tx.distanceInKm
+                          ? `${tx.distanceInKm.toFixed(2)} km`
+                          : "—"}
                       </TableCell>
 
                       {/* Fare */}
-                      <TableCell className="text-sm text-right font-medium text-neutral-800 dark:text-neutral-200">
+                      <TableCell className="text-right text-sm font-medium text-neutral-800 dark:text-neutral-200">
                         {tx.fare !== null ? `৳${tx.fare}` : "—"}
                       </TableCell>
 
@@ -268,7 +296,7 @@ export function Transactions() {
                       </TableCell>
 
                       {/* Date & time */}
-                      <TableCell className="pr-6 text-sm text-neutral-500 dark:text-neutral-400 whitespace-nowrap">
+                      <TableCell className="pr-6 text-sm whitespace-nowrap text-neutral-500 dark:text-neutral-400">
                         {formatDateTime(tx.checkoutTime ?? tx.createdAt)}
                       </TableCell>
                     </TableRow>

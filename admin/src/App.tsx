@@ -12,7 +12,7 @@ import { POSDevices } from "./pages/POSDevices"
 import { Transactions } from "./pages/Transactions"
 import { Settings } from "./pages/Settings"
 
-// Simple placeholder page for other sidebar routes
+
 function ComingSoon({ title }: { title: string }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[400px] text-center border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl p-8 bg-white dark:bg-neutral-900/50">
@@ -28,17 +28,17 @@ export function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Route */}
+
         <Route path="/login" element={<Login />} />
 
-        {/* Authenticated Routes */}
+
         <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/cards" element={<Cards />} />
             <Route path="/passengers" element={<Passengers />} />
 
-            {/* Other Sidebar Routes */}
+
             <Route path="/routes" element={<RoutesPage />} />
             <Route path="/buses" element={<Buses />} />
             <Route path="/pos-devices" element={<POSDevices />} />
@@ -50,7 +50,7 @@ export function App() {
           </Route>
         </Route>
 
-        {/* Catch-all redirect */}
+
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>

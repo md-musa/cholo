@@ -15,7 +15,7 @@ interface ILogErrorOptions {
 
 const getLogs = async (req: Request, res: Response) => {
   const sort = (req.query.sort as string) || "-createdAt";
-  const logs = await ErrorLogModel.find().sort(sort).lean(); // Add .lean()
+  const logs = await ErrorLogModel.find().sort(sort).lean();
 
   sendResponse<ILogErrorOptions[]>(res, {
     success: true,
@@ -26,7 +26,7 @@ const getLogs = async (req: Request, res: Response) => {
 };
 
 const logErrorToDatabase = async (options: ILogErrorOptions) => {
-  // console.log(options);
+
   try {
     await ErrorLogModel.create({
       message: options.message,

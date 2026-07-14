@@ -6,7 +6,6 @@ import { PassengerModel, POSDeviceModel, AdminModel, SuperAdminModel } from "./a
 
 const registerUser = async (req: Request, res: Response): Promise<void> => {
   const userInfo = req.body;
-  console.log(userInfo);
 
   const { accessToken, refreshToken, user } = await AuthService.registerUser(userInfo);
   res.cookie("refreshToken", refreshToken);
@@ -24,7 +23,6 @@ const login = async (req: Request, res: Response): Promise<void> => {
 
   const { accessToken, refreshToken, user } = await AuthService.login(userInfo);
   res.cookie("refreshToken", refreshToken);
-  console.log("accessToken", accessToken);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -34,8 +32,6 @@ const login = async (req: Request, res: Response): Promise<void> => {
 };
 
 const getSingleUserData = async (req: Request, res: Response): Promise<void> => {
-  console.log(req.params);
-  console.log(req.query);
   const { userId } = req.query;
   const user = await AuthService.getSingleUserData(userId as string);
 

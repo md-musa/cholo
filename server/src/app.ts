@@ -27,7 +27,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-// routes
+
 app.get("/", (req: Request, res: Response) => {
   res.send("HELLO WORLD");
 });
@@ -45,9 +45,6 @@ app.use(routeNotFoundError);
 
 
 
-// ---------------------------
-// Socket IO
-// ---------------------------
 
 export const socketHandler = (socket: any) => {
   console.log(`🟢 New client connected: ${socket.id}`);
